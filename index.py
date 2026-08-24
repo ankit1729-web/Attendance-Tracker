@@ -61,6 +61,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <h2>Adamas Attendence Tracker</h2>
                 </div>
                 <div class="nav-user">
+                    <img id="user-avatar" src="" alt="Profile" style="display: none; width: 36px; height: 36px; border-radius: 50%; object-fit: cover; margin-right: 10px; border: 2px solid rgba(255,255,255,0.2);">
                     <span id="user-greeting">Hello, Student</span>
                     <button class="btn-icon" id="logout-btn" title="Logout">
                         <i data-lucide="log-out"></i>
@@ -687,6 +688,15 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
     function showDashboard() {
         loginView.classList.remove('active');
         userGreeting.textContent = `Hello, ${currentData.studentName}`;
+        
+        const userAvatar = document.getElementById('user-avatar');
+        if (currentData.profilePhoto) {
+            userAvatar.src = currentData.profilePhoto;
+            userAvatar.style.display = 'block';
+        } else {
+            userAvatar.style.display = 'none';
+        }
+
         setTimeout(() => {
             dashboardView.classList.add('active');
             renderSubjects();
@@ -905,6 +915,19 @@ def login():
             except Exception as e:
                 print(f"Failed to fetch profile: {e}")
 
+        # Extract profile photo
+        profile_photo = ""
+        try:
+            img = soup_dashboard.find('img', alt='User Pic') or soup_dashboard.find('img', class_='img-circle')
+            if img and img.get('src'):
+                profile_photo = img.get('src')
+            elif 'profile_soup' in locals():
+                img = profile_soup.find('img', alt='User Pic') or profile_soup.find('img', class_='img-circle')
+                if img and img.get('src'):
+                    profile_photo = img.get('src')
+        except Exception:
+            pass
+
         # Track login in database
         try:
             mongo_uri = os.environ.get("MONGO_URI")
@@ -927,6 +950,7 @@ def login():
             "success": True,
             "data": {
                 "studentName": student_name,
+                "profilePhoto": profile_photo,
                 "subjects": subjects
             }
         })
