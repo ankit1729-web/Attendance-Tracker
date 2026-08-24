@@ -2,6 +2,9 @@ from flask import Flask, request, jsonify, Response
 import requests
 from bs4 import BeautifulSoup
 import urllib3
+import os
+from datetime import datetime
+from pymongo import MongoClient
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = Flask(__name__)
@@ -901,6 +904,21 @@ def login():
                                     break
             except Exception as e:
                 print(f"Failed to fetch profile: {e}")
+
+        # Track login in database
+        try:
+            mongo_uri = os.environ.get("MONGO_URI")
+            if mongo_uri:
+                client = MongoClient(mongo_uri)
+                db = client.get_database("attendance_tracker")
+                logins = db.get_collection("logins")
+                logins.insert_one({
+                    "username": username,
+                    "studentName": student_name,
+                    "timestamp": datetime.utcnow()
+                })
+        except Exception as db_err:
+            print(f"Database error: {db_err}")
 
         if not subjects:
              return jsonify({"success": True, "data": MOCK_DATA, "message": "No attendance records found."})
