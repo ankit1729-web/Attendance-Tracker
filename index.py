@@ -692,6 +692,9 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
         const userAvatar = document.getElementById('user-avatar');
         if (currentData.profilePhoto) {
             userAvatar.src = currentData.profilePhoto;
+            userAvatar.onerror = function() {
+                this.style.display = 'none';
+            };
             userAvatar.style.display = 'block';
         } else {
             userAvatar.style.display = 'none';
@@ -925,6 +928,9 @@ def login():
                 img = profile_soup.find('img', alt='User Pic') or profile_soup.find('img', class_='img-circle')
                 if img and img.get('src'):
                     profile_photo = img.get('src')
+                    
+            if profile_photo.startswith('/'):
+                profile_photo = 'https://adamasknowledgecity.ac.in' + profile_photo
         except Exception:
             pass
 
