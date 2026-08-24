@@ -11,7 +11,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Tracker Pro</title>
+    <title>Adamas Attendence Tracker</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -55,7 +55,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             <nav class="navbar glass-panel">
                 <div class="nav-brand">
                     <i data-lucide="graduation-cap"></i>
-                    <h2>Tracker Pro</h2>
+                    <h2>Adamas Attendence Tracker</h2>
                 </div>
                 <div class="nav-user">
                     <span id="user-greeting">Hello, Student</span>
@@ -87,6 +87,10 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <i data-lucide="alert-triangle"></i>
                     <span>Currently using mock data. You must update app.py with your college's specific HTML structure to fetch real data.</span>
                 </div>
+                
+                <footer style="text-align: center; margin-top: 2rem; padding-bottom: 1rem; color: rgba(255, 255, 255, 0.5); font-size: 0.9rem;">
+                    Created by Ankit
+                </footer>
             </main>
         </div>
     </div>
