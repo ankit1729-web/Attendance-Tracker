@@ -61,6 +61,15 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <h2>Adamas Attendence Tracker</h2>
                 </div>
                 <div class="nav-user">
+                    <div class="dropdown">
+                        <button class="dropbtn">Academics <i data-lucide="chevron-down"></i></button>
+                        <div class="dropdown-content">
+                            <a href="https://adamasknowledgecity.ac.in/student/my_programme" target="_blank"><i data-lucide="book-open"></i> My Programme</a>
+                            <a href="https://adamasknowledgecity.ac.in/student/my_courses" target="_blank"><i data-lucide="book"></i> My Courses</a>
+                            <a href="https://adamasknowledgecity.ac.in/student/courseallocation" target="_blank"><i data-lucide="check-square"></i> Course Selection</a>
+                            <a href="https://adamasknowledgecity.ac.in/student/myapplication/miscellaneous_application" target="_blank"><i data-lucide="file-text"></i> Misc. Application</a>
+                        </div>
+                    </div>
                     <img id="user-avatar" src="" alt="Profile" style="display: none; width: 36px; height: 36px; border-radius: 50%; object-fit: cover; margin-right: 10px; border: 2px solid rgba(255,255,255,0.2);">
                     <span id="user-greeting">Hello, Student</span>
                     <button class="btn-icon" id="logout-btn" title="Logout">
@@ -595,6 +604,67 @@ body {
         padding: 1rem;
     }
 }
+
+/* Dropdown Menu */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    margin-right: 1.5rem;
+}
+
+.dropbtn {
+    background-color: transparent;
+    color: var(--text-main);
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.dropbtn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: var(--bg-dark);
+    min-width: 220px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+    z-index: 100;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    top: 110%;
+    right: 0;
+    overflow: hidden;
+}
+
+.dropdown-content a {
+    color: var(--text-main);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.dropdown-content a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--primary);
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
 """
 JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
