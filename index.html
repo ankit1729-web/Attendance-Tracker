@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Tracker Pro</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Adamas Attendence Tracker</title>
+    <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -47,9 +47,19 @@
             <nav class="navbar glass-panel">
                 <div class="nav-brand">
                     <i data-lucide="graduation-cap"></i>
-                    <h2>Tracker Pro</h2>
+                    <h2>Adamas Attendence Tracker</h2>
                 </div>
                 <div class="nav-user">
+                    <div class="dropdown">
+                        <button class="dropbtn">Academics <i data-lucide="chevron-down"></i></button>
+                        <div class="dropdown-content">
+                            <a href="https://adamasknowledgecity.ac.in/student/my_programme" target="_blank"><i data-lucide="book-open"></i> My Programme</a>
+                            <a href="https://adamasknowledgecity.ac.in/student/my_courses" target="_blank"><i data-lucide="book"></i> My Courses</a>
+                            <a href="https://adamasknowledgecity.ac.in/student/courseallocation" target="_blank"><i data-lucide="check-square"></i> Course Selection</a>
+                            <a href="https://adamasknowledgecity.ac.in/student/myapplication/miscellaneous_application" target="_blank"><i data-lucide="file-text"></i> Misc. Application</a>
+                        </div>
+                    </div>
+                    <img id="user-avatar" src="" alt="Profile" style="display: none; width: 36px; height: 36px; border-radius: 50%; object-fit: cover; margin-right: 10px; border: 2px solid rgba(255,255,255,0.2);">
                     <span id="user-greeting">Hello, Student</span>
                     <button class="btn-icon" id="logout-btn" title="Logout">
                         <i data-lucide="log-out"></i>
@@ -58,13 +68,20 @@
             </nav>
 
             <main class="dashboard-content">
-                <header class="dashboard-header">
+                <div class="tabs-container" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn-tab active" data-tab="attendance-tab" style="padding: 10px 20px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; cursor: pointer; transition: all 0.3s; font-weight: 600;">Attendance</button>
+                    <button class="btn-tab" data-tab="routine-tab" style="padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.3s; font-weight: 600;">Class Routine</button>
+                </div>
+
+                <div id="attendance-tab" class="tab-content active">
+                    <header class="dashboard-header">
                     <div>
                         <h1>Your Attendance</h1>
                         <p>Analyze your progress and plan your leaves.</p>
                     </div>
                     <div class="target-selector glass-panel">
                         <label>Target:</label>
+                        <button class="btn-target" data-target="75">75%</button>
                         <button class="btn-target active" data-target="85">85%</button>
                         <button class="btn-target" data-target="95">95%</button>
                     </div>
@@ -78,6 +95,40 @@
                     <i data-lucide="alert-triangle"></i>
                     <span>Currently using mock data. You must update app.py with your college's specific HTML structure to fetch real data.</span>
                 </div>
+                </div> <!-- End attendance tab -->
+
+                <div id="routine-tab" class="tab-content" style="display: none;">
+                    <header class="dashboard-header">
+                        <div>
+                            <h1>Class Routine</h1>
+                            <p>Your schedule for the week.</p>
+                        </div>
+                    </header>
+                    <div class="routine-container glass-panel" style="overflow-x: auto; padding: 20px; margin-top: 1rem;">
+                        <table class="routine-table" style="width: 100%; border-collapse: separate; border-spacing: 4px;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Day</th>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Period 1<br><small style="font-weight: normal; color: rgba(255,255,255,0.7);">09:30 - 10:25</small></th>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Period 2<br><small style="font-weight: normal; color: rgba(255,255,255,0.7);">10:30 - 11:25</small></th>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Period 3<br><small style="font-weight: normal; color: rgba(255,255,255,0.7);">11:30 - 12:25</small></th>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Period 4<br><small style="font-weight: normal; color: rgba(255,255,255,0.7);">12:30 - 13:25</small></th>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Period 5<br><small style="font-weight: normal; color: rgba(255,255,255,0.7);">13:30 - 14:25</small></th>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Period 6<br><small style="font-weight: normal; color: rgba(255,255,255,0.7);">14:30 - 15:25</small></th>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Period 7<br><small style="font-weight: normal; color: rgba(255,255,255,0.7);">15:30 - 16:25</small></th>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Period 8<br><small style="font-weight: normal; color: rgba(255,255,255,0.7);">16:30 - 17:25</small></th>
+                                </tr>
+                            </thead>
+                            <tbody id="routine-tbody">
+                                <!-- Routine rows injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <footer style="text-align: center; margin-top: 2rem; padding-bottom: 1rem; color: rgba(255, 255, 255, 0.5); font-size: 0.9rem;">
+                    Created by Ankit
+                </footer>
             </main>
         </div>
     </div>
@@ -121,7 +172,7 @@
         </div>
     </template>
 
-    <script src="/static/script.js"></script>
+    <script src="script.js"></script>
     <script>
         lucide.createIcons();
     </script>

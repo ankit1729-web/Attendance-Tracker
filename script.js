@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const subjectsContainer = document.getElementById('subjects-container');
     const targetBtns = document.querySelectorAll('.btn-target');
     const scraperWarning = document.getElementById('scraper-warning');
+    const tabBtns = document.querySelectorAll('.btn-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const routineTbody = document.getElementById('routine-tbody');
 
     // State
     let currentData = null;
@@ -87,12 +90,50 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Tab Selection
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // Update buttons
+            tabBtns.forEach(b => {
+                b.classList.remove('active');
+                b.style.background = 'transparent';
+                b.style.color = 'rgba(255,255,255,0.7)';
+            });
+            const clickedBtn = e.target;
+            clickedBtn.classList.add('active');
+            clickedBtn.style.background = 'rgba(255,255,255,0.1)';
+            clickedBtn.style.color = 'white';
+
+            // Update content
+            tabContents.forEach(content => {
+                content.style.display = 'none';
+                content.classList.remove('active');
+            });
+            const targetTab = document.getElementById(clickedBtn.dataset.tab);
+            targetTab.style.display = 'block';
+            setTimeout(() => targetTab.classList.add('active'), 10);
+        });
+    });
+
     function showDashboard() {
         loginView.classList.remove('active');
         userGreeting.textContent = `Hello, ${currentData.studentName}`;
+        
+        const userAvatar = document.getElementById('user-avatar');
+        if (currentData.profilePhoto) {
+            userAvatar.src = currentData.profilePhoto;
+            userAvatar.onerror = function() {
+                this.style.display = 'none';
+            };
+            userAvatar.style.display = 'block';
+        } else {
+            userAvatar.style.display = 'none';
+        }
+
         setTimeout(() => {
             dashboardView.classList.add('active');
             renderSubjects();
+            renderRoutine();
         }, 400);
     }
 
@@ -177,5 +218,62 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         lucide.createIcons();
+    }
+
+    function renderRoutine() {
+        routineTbody.innerHTML = '';
+        if (!currentData || !currentData.routine) {
+            routineTbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px;">No routine data available.</td></tr>';
+            return;
+        }
+
+        currentData.routine.forEach(day => {
+            const tr = document.createElement('tr');
+            
+            // Day column
+            const tdDay = document.createElement('td');
+            tdDay.innerHTML = `<strong>${day.day}</strong>`;
+            tdDay.style.padding = '10px';
+            tdDay.style.background = 'rgba(255,255,255,0.05)';
+            tdDay.style.borderRadius = '8px';
+            tr.appendChild(tdDay);
+
+            let expectedPeriod = 1;
+            day.schedule.forEach(slot => {
+                const td = document.createElement('td');
+                td.colSpan = slot.colspan;
+                td.style.padding = '10px';
+                td.style.background = 'rgba(255,255,255,0.02)';
+                td.style.borderRadius = '8px';
+                td.style.textAlign = 'center';
+                
+                if (slot.subject) {
+                    td.innerHTML = `
+                        <div style="font-weight: 600; font-size: 0.9rem; color: #a5b4fc; text-transform: capitalize;">${slot.subject}</div>
+                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-top: 4px; text-transform: capitalize;">${slot.teacher}</div>
+                        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 2px;">${slot.room}</div>
+                    `;
+                    td.style.border = '1px solid rgba(255,255,255,0.1)';
+                } else {
+                    td.innerHTML = '<span style="color: rgba(255,255,255,0.2);">-</span>';
+                }
+                tr.appendChild(td);
+                expectedPeriod += slot.colspan;
+            });
+
+            // Fill any remaining empty slots if schedule array didn't go up to 8
+            while (expectedPeriod <= 8) {
+                const td = document.createElement('td');
+                td.style.padding = '10px';
+                td.style.background = 'rgba(255,255,255,0.02)';
+                td.style.borderRadius = '8px';
+                td.style.textAlign = 'center';
+                td.innerHTML = '<span style="color: rgba(255,255,255,0.2);">-</span>';
+                tr.appendChild(td);
+                expectedPeriod++;
+            }
+
+            routineTbody.appendChild(tr);
+        });
     }
 });
