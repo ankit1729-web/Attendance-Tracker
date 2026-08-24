@@ -857,22 +857,45 @@ def login():
         if name_span and name_span.text.strip():
             student_name = name_span.text.strip()
         else:
-            # Fallback to profile page just in case
+            # Aggressive fallback to profile page
             try:
                 profile_resp = session.get("https://adamasknowledgecity.ac.in/student/account/personal-info", verify=False)
                 profile_soup = BeautifulSoup(profile_resp.text, 'html.parser')
+                
+                # 1. Try username span
                 profile_name_span = profile_soup.find('span', class_='username')
                 if profile_name_span and profile_name_span.text.strip():
                     student_name = profile_name_span.text.strip()
                 else:
-                    # Look for input with name='name' or 'student_name' or 'first_name'
-                    for input_name in ['name', 'student_name', 'first_name', 'studentName']:
-                        name_input = profile_soup.find('input', {'name': input_name})
-                        if name_input and name_input.get('value', '').strip():
-                            student_name = name_input.get('value').strip()
-                            break
-            except Exception:
-                pass
+                    # 2. Try input fields (like first_name, name, student_name)
+                    found = False
+                    for inp in profile_soup.find_all('input'):
+                        if inp.get('name') and 'name' in inp.get('name').lower() and inp.get('value'):
+                            val = inp.get('value').strip()
+                            # avoid picking up weird hidden inputs
+                            if len(val) > 2 and len(val) < 50:
+                                student_name = val
+                                found = True
+                                break
+                                
+                    if not found:
+                        # 3. Text Heuristic: Find label "Name" or "Student Name" and get the next text or td
+                        all_text_elements = profile_soup.find_all(['th', 'td', 'label', 'div', 'span'])
+                        for i, el in enumerate(all_text_elements):
+                            text = el.get_text(strip=True).lower()
+                            if text in ['name', 'name:', 'student name', 'student name:']:
+                                # Try to find the next element that has text
+                                for next_el in all_text_elements[i+1:]:
+                                    next_text = next_el.get_text(strip=True)
+                                    if next_text and next_text.lower() not in ['name', 'name:', 'student name']:
+                                        if len(next_text) > 2 and len(next_text) < 50:
+                                            student_name = next_text
+                                            found = True
+                                            break
+                                if found:
+                                    break
+            except Exception as e:
+                print(f"Failed to fetch profile: {e}")
 
         if not subjects:
              return jsonify({"success": True, "data": MOCK_DATA, "message": "No attendance records found."})
