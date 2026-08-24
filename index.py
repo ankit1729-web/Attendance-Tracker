@@ -73,6 +73,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     </div>
                     <div class="target-selector glass-panel">
                         <label>Target:</label>
+                        <button class="btn-target" data-target="75">75%</button>
                         <button class="btn-target active" data-target="85">85%</button>
                         <button class="btn-target" data-target="95">95%</button>
                     </div>
