@@ -851,14 +851,36 @@ def login():
                         "total": total_classes,
                         "attended": attended_classes
                     })
-        
+        soup_dashboard = BeautifulSoup(login_response.text, 'html.parser')
+        student_name = username.split('/')[-1] if '/' in username else username
+        name_span = soup_dashboard.find('span', class_='username')
+        if name_span and name_span.text.strip():
+            student_name = name_span.text.strip()
+        else:
+            # Fallback to profile page just in case
+            try:
+                profile_resp = session.get("https://adamasknowledgecity.ac.in/student/account/personal-info", verify=False)
+                profile_soup = BeautifulSoup(profile_resp.text, 'html.parser')
+                profile_name_span = profile_soup.find('span', class_='username')
+                if profile_name_span and profile_name_span.text.strip():
+                    student_name = profile_name_span.text.strip()
+                else:
+                    # Look for input with name='name' or 'student_name' or 'first_name'
+                    for input_name in ['name', 'student_name', 'first_name', 'studentName']:
+                        name_input = profile_soup.find('input', {'name': input_name})
+                        if name_input and name_input.get('value', '').strip():
+                            student_name = name_input.get('value').strip()
+                            break
+            except Exception:
+                pass
+
         if not subjects:
              return jsonify({"success": True, "data": MOCK_DATA, "message": "No attendance records found."})
              
         return jsonify({
             "success": True,
             "data": {
-                "studentName": username.split('/')[-1] if '/' in username else username,
+                "studentName": student_name,
                 "subjects": subjects
             }
         })
