@@ -62,16 +62,15 @@ HTML_CONTENT = """<!DOCTYPE html>
                 </div>
                 <div class="nav-user">
                     <div class="dropdown">
-                        <button class="dropbtn">Academics <i data-lucide="chevron-down"></i></button>
-                        <div class="dropdown-content">
-                            <a href="https://adamasknowledgecity.ac.in/student/my_programme" target="_blank"><i data-lucide="book-open"></i> My Programme</a>
-                            <a href="https://adamasknowledgecity.ac.in/student/my_courses" target="_blank"><i data-lucide="book"></i> My Courses</a>
-                            <a href="https://adamasknowledgecity.ac.in/student/courseallocation" target="_blank"><i data-lucide="check-square"></i> Course Selection</a>
-                            <a href="https://adamasknowledgecity.ac.in/student/myapplication/miscellaneous_application" target="_blank"><i data-lucide="file-text"></i> Misc. Application</a>
+                        <button class="dropbtn" id="academics-btn">Academics <i data-lucide="chevron-down"></i></button>
+                        <div class="dropdown-content" id="academics-dropdown">
+                            <a href="#" id="nav-info"><i data-lucide="info"></i> Info</a>
+                            <a href="#" id="nav-cr-dashboard" style="display: none;"><i data-lucide="shield"></i> CR Dashboard</a>
                         </div>
                     </div>
                     <img id="user-avatar" src="" alt="Profile" style="display: none; width: 36px; height: 36px; border-radius: 50%; object-fit: cover; margin-right: 10px; border: 2px solid rgba(255,255,255,0.2);">
                     <span id="user-greeting">Hello, Student</span>
+                    <span id="user-section" style="font-size: 0.9rem; margin-left: 10px; color: var(--primary);"></span>
                     <button class="btn-icon" id="logout-btn" title="Logout">
                         <i data-lucide="log-out"></i>
                     </button>
@@ -79,7 +78,13 @@ HTML_CONTENT = """<!DOCTYPE html>
             </nav>
 
             <main class="dashboard-content">
-                <header class="dashboard-header">
+                <div class="tabs-container" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn-tab active" data-tab="attendance-tab" style="padding: 10px 20px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; cursor: pointer; transition: all 0.3s; font-weight: 600;">Attendance</button>
+                    <button class="btn-tab" data-tab="routine-tab" style="padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.3s; font-weight: 600;">Class Routine</button>
+                </div>
+
+                <div id="attendance-tab" class="tab-content active">
+                    <header class="dashboard-header">
                     <div>
                         <h1>Your Attendance</h1>
                         <p>Analyze your progress and plan your leaves.</p>
@@ -100,11 +105,118 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <i data-lucide="alert-triangle"></i>
                     <span>Currently using mock data. You must update app.py with your college's specific HTML structure to fetch real data.</span>
                 </div>
+                </div> <!-- End attendance tab -->
+
+                <div id="routine-tab" class="tab-content" style="display: none;">
+                    <header class="dashboard-header">
+                        <div>
+                            <h1>Class Routine</h1>
+                            <p>Your schedule for the week.</p>
+                        </div>
+                    </header>
+                    <div class="routine-container glass-panel" style="overflow-x: auto; padding: 20px; margin-top: 1rem;">
+                        <table class="routine-table" style="width: 100%; border-collapse: separate; border-spacing: 4px;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Day</th>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Period 1<br><small style="font-weight: normal; color: rgba(255,255,255,0.7);">09:30 - 10:25</small></th>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Period 2<br><small style="font-weight: normal; color: rgba(255,255,255,0.7);">10:30 - 11:25</small></th>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Period 3<br><small style="font-weight: normal; color: rgba(255,255,255,0.7);">11:30 - 12:25</small></th>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Period 4<br><small style="font-weight: normal; color: rgba(255,255,255,0.7);">12:30 - 13:25</small></th>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Period 5<br><small style="font-weight: normal; color: rgba(255,255,255,0.7);">13:30 - 14:25</small></th>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Period 6<br><small style="font-weight: normal; color: rgba(255,255,255,0.7);">14:30 - 15:25</small></th>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Period 7<br><small style="font-weight: normal; color: rgba(255,255,255,0.7);">15:30 - 16:25</small></th>
+                                    <th style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">Period 8<br><small style="font-weight: normal; color: rgba(255,255,255,0.7);">16:30 - 17:25</small></th>
+                                </tr>
+                            </thead>
+                            <tbody id="routine-tbody">
+                                <!-- Routine rows injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
                 
                 <footer style="text-align: center; margin-top: 2rem; padding-bottom: 1rem; color: rgba(255, 255, 255, 0.5); font-size: 0.9rem;">
                     Created by Ankit
                 </footer>
             </main>
+        </div>
+
+        <!-- CR Dashboard View -->
+        <div id="cr-dashboard-view" class="view">
+            <nav class="navbar glass-panel">
+                <div class="nav-brand">
+                    <i data-lucide="shield"></i>
+                    <h2>CR Dashboard</h2>
+                </div>
+                <div class="nav-user">
+                    <button class="btn-icon" id="back-to-dashboard-btn" title="Back to Main Dashboard">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                </div>
+            </nav>
+
+            <main class="dashboard-content">
+                <div class="glass-panel" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div>
+                        <h3>Attendance Register</h3>
+                        <p style="color: var(--text-muted); margin-top: 5px; font-size: 0.9rem;"><span id="cr-section-label">Section</span> | Custom List</p>
+                    </div>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <input type="date" id="cr-date-picker" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(15, 23, 42, 0.6); color: white; outline: none; font-family: inherit;">
+                        <button id="cr-export-btn" class="btn-primary" style="margin-top: 0; padding: 10px 20px; font-size: 0.95rem; width: auto;">
+                            <i data-lucide="download"></i> Export PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Add Student Form -->
+                <div class="glass-panel" style="margin-bottom: 20px;">
+                    <form id="add-student-form" style="display: flex; gap: 15px; align-items: flex-end;">
+                        <div style="flex: 1;">
+                            <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Roll Number</label>
+                            <input type="text" id="add-roll" required placeholder="e.g. 351" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(15, 23, 42, 0.6); color: white; outline: none; font-family: inherit;">
+                        </div>
+                        <div style="flex: 2;">
+                            <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Student Name</label>
+                            <input type="text" id="add-name" required placeholder="e.g. John Doe" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(15, 23, 42, 0.6); color: white; outline: none; font-family: inherit;">
+                        </div>
+                        <button type="submit" class="btn-primary" style="margin-top: 0; padding: 10px 20px; font-size: 0.95rem; width: auto; height: 42px;">
+                            <i data-lucide="plus"></i> Add
+                        </button>
+                    </form>
+                </div>
+
+                <div class="glass-panel">
+                    <div style="display: grid; grid-template-columns: 60px 220px 1fr 100px 80px; padding: 10px 15px; border-bottom: 1px solid var(--glass-border); font-weight: 600; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">
+                        <div>Sl No</div>
+                        <div>Roll No</div>
+                        <div>Name</div>
+                        <div style="text-align: center;">Status</div>
+                        <div></div>
+                    </div>
+                    <div id="cr-attendance-list" style="max-height: 500px; overflow-y: auto;">
+                        <!-- Student rows injected via JS -->
+                    </div>
+                </div>
+                
+                <footer style="text-align: center; margin-top: 2rem; padding-bottom: 1rem; color: rgba(255, 255, 255, 0.5); font-size: 0.9rem;">
+                    Created by Ankit
+                </footer>
+            </main>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="info-modal" class="modal">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h2><i data-lucide="user"></i> Personal Info</h2>
+                <button class="close-modal"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body" id="info-modal-body">
+                <!-- Info injected here via JS -->
+            </div>
         </div>
     </div>
 
@@ -147,6 +259,8 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
     </template>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="script.js"></script>
     <script>
         lucide.createIcons();
@@ -375,6 +489,8 @@ body {
     align-items: center;
     padding: 1rem 2rem;
     margin-bottom: 2rem;
+    position: relative;
+    z-index: 1000;
 }
 
 .nav-brand {
@@ -661,10 +777,249 @@ body {
     color: var(--primary);
 }
 
-.dropdown:hover .dropdown-content {
+.dropdown.show .dropdown-content {
     display: block;
 }
 
+/* Modal CSS */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.modal-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+}
+
+.close-modal {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close-modal:hover {
+    color: var(--danger);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.info-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+
+.info-value {
+    font-size: 1.1rem;
+    color: var(--text-light);
+}
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    background: var(--bg-card);
+    border-left: 4px solid var(--danger);
+    border-radius: 8px;
+    padding: 15px 20px;
+    color: var(--text-light);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transform: translateX(120%);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-width: 350px;
+}
+
+.toast.show {
+    transform: translateX(0);
+}
+
+.toast.hiding {
+    transform: translateX(120%);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.toast-icon {
+    color: var(--danger);
+    flex-shrink: 0;
+}
+
+.toast-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.toast-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.toast-message {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* CR Dashboard Attendance List */
+.cr-student-row {
+    display: grid;
+    grid-template-columns: 60px 220px 1fr 100px 80px;
+    padding: 12px 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.cr-student-row:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.cr-student-row:last-child {
+    border-bottom: none;
+}
+
+/* Toggle Switch Styles */
+.status-toggle {
+    display: flex;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    padding: 2px;
+    width: 80px;
+    position: relative;
+    cursor: pointer;
+    margin: 0 auto;
+}
+
+.status-toggle .toggle-option {
+    flex: 1;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 4px 0;
+    z-index: 1;
+    color: var(--text-muted);
+    transition: color 0.3s;
+}
+
+.status-toggle.present .toggle-option.opt-p {
+    color: white;
+}
+
+.status-toggle.absent .toggle-option.opt-a {
+    color: white;
+}
+
+.status-toggle .toggle-slider {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: calc(50% - 2px);
+    height: calc(100% - 4px);
+    border-radius: 18px;
+    transition: transform 0.3s, background-color 0.3s;
+    background-color: var(--good); /* Default to present green */
+    z-index: 0;
+}
+
+.status-toggle.absent .toggle-slider {
+    transform: translateX(100%);
+    background-color: var(--danger);
+}
+
+.remove-student-btn, .edit-student-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.remove-student-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+}
+
+.edit-student-btn:hover {
+    background: rgba(139, 92, 246, 0.2);
+    color: var(--primary);
+}
 """
 JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
@@ -678,6 +1033,26 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
     const subjectsContainer = document.getElementById('subjects-container');
     const targetBtns = document.querySelectorAll('.btn-target');
     const scraperWarning = document.getElementById('scraper-warning');
+    const tabBtns = document.querySelectorAll('.btn-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const routineTbody = document.getElementById('routine-tbody');
+    const academicsBtn = document.getElementById('academics-btn');
+    const academicsDropdown = document.getElementById('academics-dropdown');
+    const navInfo = document.getElementById('nav-info');
+    const infoModal = document.getElementById('info-modal');
+    const closeModalBtn = infoModal.querySelector('.close-modal');
+    const infoModalBody = document.getElementById('info-modal-body');
+    const navCrDashboard = document.getElementById('nav-cr-dashboard');
+    const crDashboardView = document.getElementById('cr-dashboard-view');
+    const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
+    const crDatePicker = document.getElementById('cr-date-picker');
+    const crExportBtn = document.getElementById('cr-export-btn');
+    const crAttendanceList = document.getElementById('cr-attendance-list');
+    const addStudentForm = document.getElementById('add-student-form');
+    const addRollInput = document.getElementById('add-roll');
+    const addNameInput = document.getElementById('add-name');
+    const crSectionLabel = document.getElementById('cr-section-label');
+    const userSection = document.getElementById('user-section');
 
     // State
     let currentData = null;
@@ -755,6 +1130,179 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Tab Selection
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // Update buttons
+            tabBtns.forEach(b => {
+                b.classList.remove('active');
+                b.style.background = 'transparent';
+                b.style.color = 'rgba(255,255,255,0.7)';
+            });
+            const clickedBtn = e.target;
+            clickedBtn.classList.add('active');
+            clickedBtn.style.background = 'rgba(255,255,255,0.1)';
+            clickedBtn.style.color = 'white';
+
+            // Update content
+            tabContents.forEach(content => {
+                content.style.display = 'none';
+                content.classList.remove('active');
+            });
+            const targetTab = document.getElementById(clickedBtn.dataset.tab);
+            targetTab.style.display = 'block';
+            setTimeout(() => targetTab.classList.add('active'), 10);
+        });
+    });
+
+    // Dropdown Toggle
+    academicsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        academicsBtn.parentElement.classList.toggle('show');
+    });
+
+    // Close dropdown on outside click
+    document.addEventListener('click', () => {
+        academicsBtn.parentElement.classList.remove('show');
+    });
+
+    academicsDropdown.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    // Modal Logic
+    navInfo.addEventListener('click', (e) => {
+        e.preventDefault();
+        academicsBtn.parentElement.classList.remove('show');
+        renderPersonalInfo();
+        infoModal.classList.add('active');
+    });
+
+    if (navCrDashboard) {
+        navCrDashboard.addEventListener('click', (e) => {
+            e.preventDefault();
+            academicsBtn.parentElement.classList.remove('show');
+            dashboardView.classList.remove('active');
+            setTimeout(() => {
+                crDashboardView.classList.add('active');
+                if (crStudentsData.length === 0) {
+                    initCRDashboard();
+                }
+            }, 400);
+        });
+    }
+
+    if (backToDashboardBtn) {
+        backToDashboardBtn.addEventListener('click', () => {
+            crDashboardView.classList.remove('active');
+            setTimeout(() => {
+                dashboardView.classList.add('active');
+            }, 400);
+        });
+    }
+
+    closeModalBtn.addEventListener('click', () => {
+        infoModal.classList.remove('active');
+    });
+
+    infoModal.addEventListener('click', (e) => {
+        if (e.target === infoModal) {
+            infoModal.classList.remove('active');
+        }
+    });
+
+    function renderPersonalInfo() {
+        infoModalBody.innerHTML = '';
+        if (!currentData || !currentData.personalInfo || Object.keys(currentData.personalInfo).length === 0) {
+            infoModalBody.innerHTML = '<p style="text-align:center; color: var(--text-muted);">No personal information available.</p>';
+            return;
+        }
+
+        // Recursive function to render nested objects
+        function renderNode(node, container, level = 0) {
+            if (Array.isArray(node)) {
+                // Render array of objects (like Educational Details)
+                const table = document.createElement('table');
+                table.style.width = '100%';
+                table.style.borderCollapse = 'collapse';
+                table.style.marginTop = '10px';
+                table.style.marginBottom = '15px';
+                
+                if (node.length > 0) {
+                    const thead = document.createElement('thead');
+                    const trHead = document.createElement('tr');
+                    Object.keys(node[0]).forEach(key => {
+                        const th = document.createElement('th');
+                        th.textContent = key;
+                        th.style.padding = '8px';
+                        th.style.background = 'rgba(255,255,255,0.1)';
+                        th.style.textAlign = 'left';
+                        th.style.fontSize = '0.85rem';
+                        trHead.appendChild(th);
+                    });
+                    thead.appendChild(trHead);
+                    table.appendChild(thead);
+                    
+                    const tbody = document.createElement('tbody');
+                    node.forEach(rowObj => {
+                        const tr = document.createElement('tr');
+                        Object.values(rowObj).forEach(val => {
+                            const td = document.createElement('td');
+                            td.textContent = val;
+                            td.style.padding = '8px';
+                            td.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+                            td.style.fontSize = '0.9rem';
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+                    table.appendChild(tbody);
+                }
+                container.appendChild(table);
+            } else if (typeof node === 'object' && node !== null) {
+                // Render object (key-value pairs or nested categories)
+                Object.entries(node).forEach(([key, value]) => {
+                    // Check if value is a string (or empty object meaning no subdata)
+                    if (typeof value === 'string') {
+                        const item = document.createElement('div');
+                        item.className = 'info-item';
+                        item.style.paddingLeft = `${level * 15}px`;
+                        
+                        // Check if value looks like an image URL
+                        if (value.startsWith('http') && (value.includes('.jpeg') || value.includes('.jpg') || value.includes('.png') || value.includes('.gif'))) {
+                            item.innerHTML = `
+                                <span class="info-label">${key}</span>
+                                <span class="info-value"><img src="${value}" alt="${key}" style="max-width: 150px; border-radius: 8px; margin-top: 5px;"></span>
+                            `;
+                        } else {
+                            item.innerHTML = `
+                                <span class="info-label">${key}</span>
+                                <span class="info-value">${value}</span>
+                            `;
+                        }
+                        container.appendChild(item);
+                    } else if (Object.keys(value).length > 0) {
+                        // It's a nested category
+                        const header = document.createElement('h4');
+                        header.textContent = key;
+                        header.style.color = 'var(--primary)';
+                        header.style.marginTop = '1.5rem';
+                        header.style.marginBottom = '1rem';
+                        header.style.paddingBottom = '0.5rem';
+                        header.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+                        header.style.fontSize = level === 0 ? '1.1rem' : '0.95rem';
+                        header.style.marginLeft = `${level * 15}px`;
+                        container.appendChild(header);
+                        
+                        renderNode(value, container, level + 1);
+                    }
+                });
+            }
+        }
+
+        renderNode(currentData.personalInfo, infoModalBody, 0);
+    }
+
     function showDashboard() {
         loginView.classList.remove('active');
         userGreeting.textContent = `Hello, ${currentData.studentName}`;
@@ -773,6 +1321,24 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             dashboardView.classList.add('active');
             renderSubjects();
+            renderRoutine();
+            
+            // Check CR status and show link if true
+            if (currentData.is_cr) {
+                navCrDashboard.style.display = 'block';
+            } else {
+                navCrDashboard.style.display = 'none';
+            }
+
+            if (currentData.section && userSection) {
+                userSection.innerText = `| ${currentData.section}`;
+            } else if (userSection) {
+                userSection.innerText = '';
+            }
+
+            if (currentData.subjects && currentData.subjects.length > 0) {
+                // Initial CR Dashboard rendering logic placeholder
+            }
         }, 400);
     }
 
@@ -819,9 +1385,51 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Toast Notification System
+    function showToast(title, message, isWarning = false) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        if (!isWarning) {
+            toast.style.borderLeftColor = 'var(--good)';
+        }
+
+        const iconColorClass = isWarning ? 'var(--danger)' : 'var(--good)';
+        const iconName = isWarning ? 'alert-triangle' : 'check-circle';
+
+        toast.innerHTML = `
+            <div class="toast-icon" style="color: ${iconColorClass}">
+                <i data-lucide="${iconName}"></i>
+            </div>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+        `;
+
+        container.appendChild(toast);
+        lucide.createIcons({ root: toast });
+
+        // Animate in
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            toast.classList.add('hiding');
+            toast.addEventListener('transitionend', () => {
+                toast.remove();
+            });
+        }, 5000);
+    }
+
     function renderSubjects() {
         subjectsContainer.innerHTML = '';
         const template = document.getElementById('subject-card-template');
+        let lowSubjectsCount = 0;
 
         currentData.subjects.forEach((subject, index) => {
             const clone = template.content.cloneNode(true);
@@ -853,11 +1461,332 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
                 circle.setAttribute('stroke-dasharray', `${percentage}, 100`);
             }, 50 * index);
 
+            if (percentage < (targetPercentage * 100)) {
+                lowSubjectsCount++;
+            }
+
             subjectsContainer.appendChild(clone);
         });
 
         lucide.createIcons();
+
+        // Trigger real-time low attendance notification
+        if (lowSubjectsCount > 0) {
+            showToast(
+                'Low Attendance Alert', 
+                `You have ${lowSubjectsCount} subject${lowSubjectsCount > 1 ? 's' : ''} below your ${Math.round(targetPercentage * 100)}% target!`, 
+                true
+            );
+        } else if (currentData.subjects.length > 0) {
+            showToast(
+                'Attendance Looks Good', 
+                `All your subjects meet the ${Math.round(targetPercentage * 100)}% target!`, 
+                false
+            );
+        }
     }
+
+    function renderRoutine() {
+        routineTbody.innerHTML = '';
+        if (!currentData || !currentData.routine) {
+            routineTbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px;">No routine data available.</td></tr>';
+            return;
+        }
+
+        currentData.routine.forEach(day => {
+            const tr = document.createElement('tr');
+            
+            // Day column
+            const tdDay = document.createElement('td');
+            tdDay.innerHTML = `<strong>${day.day}</strong>`;
+            tdDay.style.padding = '10px';
+            tdDay.style.background = 'rgba(255,255,255,0.05)';
+            tdDay.style.borderRadius = '8px';
+            tr.appendChild(tdDay);
+
+            let expectedPeriod = 1;
+            day.schedule.forEach(slot => {
+                const td = document.createElement('td');
+                td.colSpan = slot.colspan;
+                td.style.padding = '10px';
+                td.style.background = 'rgba(255,255,255,0.02)';
+                td.style.borderRadius = '8px';
+                td.style.textAlign = 'center';
+                
+                if (slot.subject) {
+                    td.innerHTML = `
+                        <div style="font-weight: 600; font-size: 0.9rem; color: #a5b4fc; text-transform: capitalize;">${slot.subject}</div>
+                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-top: 4px; text-transform: capitalize;">${slot.teacher}</div>
+                        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 2px;">${slot.room}</div>
+                    `;
+                    td.style.border = '1px solid rgba(255,255,255,0.1)';
+                } else {
+                    td.innerHTML = '<span style="color: rgba(255,255,255,0.2);">-</span>';
+                }
+                tr.appendChild(td);
+                expectedPeriod += slot.colspan;
+            });
+
+            // Fill any remaining empty slots if schedule array didn't go up to 8
+            while (expectedPeriod <= 8) {
+                const td = document.createElement('td');
+                td.style.padding = '10px';
+                td.style.background = 'rgba(255,255,255,0.02)';
+                td.style.borderRadius = '8px';
+                td.style.textAlign = 'center';
+                td.innerHTML = '<span style="color: rgba(255,255,255,0.2);">-</span>';
+                tr.appendChild(td);
+                expectedPeriod++;
+            }
+
+            routineTbody.appendChild(tr);
+        });
+    }
+
+    // CR Dashboard Logic
+    let crStudentsData = [];
+    
+    async function saveCRStudents() {
+        try {
+            await fetch('/api/cr_students', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ students: crStudentsData })
+            });
+        } catch (e) {
+            console.error("Failed to save CR students to server", e);
+        }
+    }
+
+    async function loadCRStudents() {
+        try {
+            const resp = await fetch('/api/cr_students');
+            const result = await resp.json();
+            if (result.success && result.data && result.data.length > 0) {
+                crStudentsData = result.data;
+            } else {
+                crStudentsData = [];
+                // Auto-populate 351 to 384 for CRs on first load
+                for (let i = 351; i <= 384; i++) {
+                    crStudentsData.push({
+                        rollNo: `UG/04/BTCSE/2025/${i}`,
+                        name: '-',
+                        status: 'Present'
+                    });
+                }
+                saveCRStudents();
+            }
+        } catch (e) {
+            console.error("Failed to load CR students from server", e);
+        }
+    }
+
+    function renderCRStudents() {
+        if (!crAttendanceList) return;
+        crAttendanceList.innerHTML = '';
+        
+        crStudentsData.forEach((student, index) => {
+            // Ensure status defaults to Present on fresh render if missing
+            if (!student.status) student.status = 'Present';
+
+            const row = document.createElement('div');
+            row.className = 'cr-student-row';
+            
+            const isPresent = student.status === 'Present';
+            const toggleClass = isPresent ? 'present' : 'absent';
+            
+            row.innerHTML = `
+                <div>${index + 1}</div>
+                <div>${student.rollNo}</div>
+                <div style="text-transform: capitalize; font-size: 0.9rem;">${student.name}</div>
+                <div>
+                    <div class="status-toggle ${toggleClass}" data-index="${index}">
+                        <div class="toggle-slider"></div>
+                        <div class="toggle-option opt-p">P</div>
+                        <div class="toggle-option opt-a">A</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 5px; justify-content: flex-end;">
+                    <button class="edit-student-btn" data-index="${index}" title="Edit Name">
+                        <i data-lucide="edit-2" style="width: 16px; height: 16px;"></i>
+                    </button>
+                    <button class="remove-student-btn" data-index="${index}" title="Remove Student">
+                        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                    </button>
+                </div>
+            `;
+            
+            crAttendanceList.appendChild(row);
+        });
+
+        lucide.createIcons();
+
+        // Add event listeners to toggles
+        const toggles = crAttendanceList.querySelectorAll('.status-toggle');
+        toggles.forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const index = this.getAttribute('data-index');
+                if (this.classList.contains('present')) {
+                    this.classList.remove('present');
+                    this.classList.add('absent');
+                    crStudentsData[index].status = 'Absent';
+                } else {
+                    this.classList.remove('absent');
+                    this.classList.add('present');
+                    crStudentsData[index].status = 'Present';
+                }
+            });
+        });
+
+        // Add event listeners to remove buttons
+        const removeBtns = crAttendanceList.querySelectorAll('.remove-student-btn');
+        removeBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const index = this.getAttribute('data-index');
+                crStudentsData.splice(index, 1);
+                saveCRStudents();
+                renderCRStudents();
+            });
+        });
+
+        // Add event listeners to edit buttons
+        const editBtns = crAttendanceList.querySelectorAll('.edit-student-btn');
+        editBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const index = this.getAttribute('data-index');
+                const student = crStudentsData[index];
+                const currentName = student.name !== '-' ? student.name : '';
+                const newName = prompt(`Enter new name for Roll ${student.rollNo}:`, currentName);
+                
+                if (newName !== null && newName.trim() !== '') {
+                    student.name = newName.trim();
+                    saveCRStudents();
+                    renderCRStudents();
+                }
+            });
+        });
+    }
+
+    async function initCRDashboard() {
+        if (!crAttendanceList) return;
+        
+        if (crSectionLabel && currentData && currentData.section) {
+            crSectionLabel.innerText = currentData.section;
+        }
+
+        // Initialize date picker to today (local timezone)
+        if (crDatePicker) {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            crDatePicker.value = `${yyyy}-${mm}-${dd}`;
+        }
+
+        await loadCRStudents();
+        renderCRStudents();
+    }
+
+    if (addStudentForm) {
+        addStudentForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const rollNo = addRollInput.value.trim();
+            const name = addNameInput.value.trim();
+            
+            if (rollNo && name) {
+                crStudentsData.push({
+                    rollNo: rollNo,
+                    name: name,
+                    status: 'Present'
+                });
+                saveCRStudents();
+                renderCRStudents();
+                
+                addRollInput.value = '';
+                addNameInput.value = '';
+                addRollInput.focus();
+            }
+        });
+    }
+
+    if (crExportBtn) {
+        crExportBtn.addEventListener('click', () => {
+            const dateVal = crDatePicker.value;
+            if (!dateVal) {
+                alert("Please select a date first.");
+                return;
+            }
+
+            if (crStudentsData.length === 0) {
+                alert("No students in the list. Add some students first.");
+                return;
+            }
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Add Header
+                doc.setFontSize(18);
+                doc.setTextColor(30, 41, 59);
+                doc.text("Batch Attendance Register", 14, 22);
+                
+                doc.setFontSize(11);
+                doc.setTextColor(100, 116, 139);
+                doc.text(`Date: ${dateVal}`, 14, 30);
+                
+                const sectionText = (currentData && currentData.section) ? currentData.section : "Custom List";
+                doc.text(`${sectionText} | Total Students: ${crStudentsData.length}`, 14, 36);
+
+                // Calculate summary
+                const presentCount = crStudentsData.filter(s => s.status === 'Present').length;
+                const absentCount = crStudentsData.filter(s => s.status === 'Absent').length;
+                doc.text(`Summary: ${presentCount} Present, ${absentCount} Absent`, 14, 42);
+
+                // Prepare table data
+                const tableColumn = ["Sl No", "Roll Number", "Name", "Status"];
+                const tableRows = [];
+
+                crStudentsData.forEach((student, index) => {
+                    tableRows.push([
+                        index + 1,
+                        student.rollNo,
+                        student.name,
+                        student.status
+                    ]);
+                });
+
+                // Generate table using autoTable plugin
+                doc.autoTable({
+                    head: [tableColumn],
+                    body: tableRows,
+                    startY: 50,
+                    theme: 'grid',
+                    headStyles: { fillColor: [139, 92, 246] },
+                    styles: { fontSize: 10, cellPadding: 3 },
+                    didParseCell: function (data) {
+                        // Color the status column based on value
+                        if (data.section === 'body' && data.column.index === 3) {
+                            if (data.cell.raw === 'Present') {
+                                data.cell.styles.textColor = [16, 185, 129];
+                                data.cell.styles.fontStyle = 'bold';
+                            } else if (data.cell.raw === 'Absent') {
+                                data.cell.styles.textColor = [239, 68, 68];
+                                data.cell.styles.fontStyle = 'bold';
+                            }
+                        }
+                    }
+                });
+
+                // Save PDF
+                doc.save(`Attendance_${dateVal}.pdf`);
+            } catch (err) {
+                console.error("PDF generation failed:", err);
+                alert("Could not generate PDF. Check console for errors.");
+            }
+        });
+    }
+
 });
 """
 
@@ -889,6 +1818,10 @@ def login():
     
     if not username or not password:
         return jsonify({"error": "Username and password are required"}), 400
+
+    # Check for CR authorization early
+    authorized_crs = ["AU/2025/0004141", "AU/2025/0004167", "AU/2025/0004182"]
+    is_cr = username in authorized_crs
 
     if username == 'test':
         return jsonify({"success": True, "data": MOCK_DATA})
@@ -988,6 +1921,100 @@ def login():
             except Exception as e:
                 print(f"Failed to fetch profile: {e}")
 
+        # Extract all personal info (Form data and Table data)
+        personal_info = {}
+        if 'profile_soup' in locals():
+            try:
+                # Iterate over panels to preserve hierarchy
+                for panel in profile_soup.find_all('div', class_='panel-default'):
+                    panel_title_tag = panel.find('h5', class_='panel-title')
+                    if not panel_title_tag: continue
+                    main_category = panel_title_tag.get_text(strip=True).replace('+', '').replace('-', '').strip()
+                    personal_info[main_category] = {}
+                    
+                    # (Image extraction removed as per user request)
+                                
+                    tables = panel.find_all('table', class_='table-user-information')
+                    for table in tables:
+                        sub_category = None
+                        prev_h5 = table.find_previous_sibling('h5')
+                        if prev_h5:
+                            sub_category = prev_h5.get_text(strip=True)
+                            
+                        target_dict = personal_info[main_category]
+                        if sub_category:
+                            if sub_category not in target_dict:
+                                target_dict[sub_category] = {}
+                            target_dict = target_dict[sub_category]
+                            
+                        # Extract table rows
+                        for tr in table.find_all('tr'):
+                            tds = tr.find_all('td')
+                            if len(tds) == 2:
+                                key = tds[0].get_text(strip=True).strip(':')
+                                val = tds[1].get_text(strip=True)
+                                if key:
+                                    target_dict[key] = val
+                            elif len(tds) == 1:
+                                text = tds[0].get_text(strip=True)
+                                if ':' in text:
+                                    parts = text.split(':', 1)
+                                    if len(parts) == 2 and parts[0].strip():
+                                        target_dict[parts[0].strip()] = parts[1].strip()
+                                    
+                        # Handle grids (like educational details)
+                        thead = table.find('thead')
+                        if thead and len(table.find_all('tr')) > 1:
+                            headers = [th.get_text(strip=True) for th in thead.find_all('th')]
+                            tbody = table.find('tbody')
+                            if headers and tbody:
+                                grid_data = []
+                                for tr in tbody.find_all('tr'):
+                                    tds = [td.get_text(strip=True) for td in tr.find_all('td')]
+                                    if len(tds) == len(headers):
+                                        row_data = {headers[i]: tds[i] for i in range(len(headers))}
+                                        grid_data.append(row_data)
+                                if grid_data:
+                                    if sub_category:
+                                        personal_info[main_category][sub_category] = grid_data
+                                    else:
+                                        personal_info[main_category]['List'] = grid_data
+            except Exception as e:
+                print(f"Failed to extract personal info details: {e}")
+                
+        # Find Section
+        student_section = ""
+        def find_section(d):
+            if isinstance(d, dict):
+                for k, v in d.items():
+                    if "section" in k.lower():
+                        return str(v).strip()
+                    res = find_section(v)
+                    if res:
+                        return res
+            elif isinstance(d, list):
+                for item in d:
+                    res = find_section(item)
+                    if res:
+                        return res
+            return None
+            
+        found_sec = find_section(personal_info)
+        
+        # Fallback to searching the dashboard HTML text if not found
+        if not found_sec and 'soup_dashboard' in locals():
+            # Sometimes section is written like "Section : F" or "Section: F" anywhere in the dashboard
+            dash_text = soup_dashboard.get_text(separator=' ')
+            import re
+            sec_match = re.search(r'Section\s*[:\-]?\s*([A-Za-z0-9]+)', dash_text, re.IGNORECASE)
+            if sec_match:
+                found_sec = sec_match.group(1).strip()
+
+        if is_cr:
+            student_section = "SEC- F"
+        elif found_sec:
+            student_section = f"SEC- {found_sec.upper()}"
+
         # Extract profile photo
         profile_photo = ""
         try:
@@ -1004,6 +2031,55 @@ def login():
         except Exception:
             pass
 
+        # Extract Class Routine
+        routine = []
+        try:
+            routine_url = "https://adamasknowledgecity.ac.in/student/routine"
+            r_routine = session.get(routine_url, timeout=10)
+            if r_routine.status_code == 200:
+                soup_routine = BeautifulSoup(r_routine.text, 'html.parser')
+                table = soup_routine.find('table', class_='table-bordered')
+                if table:
+                    tbody = table.find('tbody')
+                    for tr in tbody.find_all('tr', recursive=False):
+                        day_td = tr.find('td', class_='week-day')
+                        if not day_td:
+                            continue
+                            
+                        day_text = day_td.get_text(separator='|', strip=True).split('|')[0]
+                        
+                        day_schedule = []
+                        period_idx = 1
+                        
+                        for td in tr.find_all('td', recursive=False)[1:]:
+                            colspan = int(td.get('colspan', 1))
+                            subject_span = td.find('span', class_='class-subject')
+                            if subject_span:
+                                subject = subject_span.get_text(strip=True)
+                                teacher_span = td.find('span', class_='class-teacher')
+                                room_span = td.find('span', class_='bulding-room')
+                                day_schedule.append({
+                                    "period": period_idx,
+                                    "colspan": colspan,
+                                    "subject": subject,
+                                    "teacher": teacher_span.get_text(strip=True) if teacher_span else "",
+                                    "room": room_span.get_text(strip=True) if room_span else ""
+                                })
+                            else:
+                                day_schedule.append({
+                                    "period": period_idx,
+                                    "colspan": colspan,
+                                    "subject": None
+                                })
+                            period_idx += colspan
+                            
+                        routine.append({
+                            "day": day_text,
+                            "schedule": day_schedule
+                        })
+        except Exception as e:
+            print(f"Failed to fetch routine: {e}")
+
         # Track login in database
         try:
             mongo_uri = os.environ.get("MONGO_URI")
@@ -1019,18 +2095,69 @@ def login():
         except Exception as db_err:
             print(f"Database error: {db_err}")
 
+        # Check for CR authorization
+        # (moved to top of function)
+
         if not subjects:
              return jsonify({"success": True, "data": MOCK_DATA, "message": "No attendance records found."})
              
         return jsonify({
             "success": True,
             "data": {
+                "is_cr": is_cr,
+                "section": student_section,
                 "studentName": student_name,
                 "profilePhoto": profile_photo,
-                "subjects": subjects
+                "subjects": subjects,
+                "routine": routine,
+                "personalInfo": personal_info
             }
         })
         
     except Exception as e:
         print(f"Error scraping: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/cr_students', methods=['GET'])
+def get_cr_students():
+    try:
+        mongo_uri = os.environ.get("MONGO_URI")
+        if mongo_uri:
+            client = MongoClient(mongo_uri)
+            db = client.get_database("attendance_tracker")
+            doc = db.cr_students.find_one({"_id": "shared_list"})
+            if doc:
+                return jsonify({"success": True, "data": doc.get("students", [])})
+    except Exception as e:
+        print("Mongo error:", e)
+        
+    import json
+    if os.path.exists('cr_students.json'):
+        with open('cr_students.json', 'r') as f:
+            return jsonify({"success": True, "data": json.load(f)})
+            
+    return jsonify({"success": True, "data": []})
+
+@app.route('/api/cr_students', methods=['POST'])
+def save_cr_students():
+    data = request.json
+    students = data.get('students', [])
+    
+    try:
+        mongo_uri = os.environ.get("MONGO_URI")
+        if mongo_uri:
+            client = MongoClient(mongo_uri)
+            db = client.get_database("attendance_tracker")
+            db.cr_students.update_one(
+                {"_id": "shared_list"},
+                {"$set": {"students": students}},
+                upsert=True
+            )
+    except Exception as e:
+        print("Mongo error:", e)
+
+    import json
+    with open('cr_students.json', 'w') as f:
+        json.dump(students, f)
+        
+    return jsonify({"success": True})

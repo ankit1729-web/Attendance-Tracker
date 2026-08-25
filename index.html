@@ -51,16 +51,15 @@
                 </div>
                 <div class="nav-user">
                     <div class="dropdown">
-                        <button class="dropbtn">Academics <i data-lucide="chevron-down"></i></button>
-                        <div class="dropdown-content">
-                            <a href="https://adamasknowledgecity.ac.in/student/my_programme" target="_blank"><i data-lucide="book-open"></i> My Programme</a>
-                            <a href="https://adamasknowledgecity.ac.in/student/my_courses" target="_blank"><i data-lucide="book"></i> My Courses</a>
-                            <a href="https://adamasknowledgecity.ac.in/student/courseallocation" target="_blank"><i data-lucide="check-square"></i> Course Selection</a>
-                            <a href="https://adamasknowledgecity.ac.in/student/myapplication/miscellaneous_application" target="_blank"><i data-lucide="file-text"></i> Misc. Application</a>
+                        <button class="dropbtn" id="academics-btn">Academics <i data-lucide="chevron-down"></i></button>
+                        <div class="dropdown-content" id="academics-dropdown">
+                            <a href="#" id="nav-info"><i data-lucide="info"></i> Info</a>
+                            <a href="#" id="nav-cr-dashboard" style="display: none;"><i data-lucide="shield"></i> CR Dashboard</a>
                         </div>
                     </div>
                     <img id="user-avatar" src="" alt="Profile" style="display: none; width: 36px; height: 36px; border-radius: 50%; object-fit: cover; margin-right: 10px; border: 2px solid rgba(255,255,255,0.2);">
                     <span id="user-greeting">Hello, Student</span>
+                    <span id="user-section" style="font-size: 0.9rem; margin-left: 10px; color: var(--primary);"></span>
                     <button class="btn-icon" id="logout-btn" title="Logout">
                         <i data-lucide="log-out"></i>
                     </button>
@@ -131,6 +130,83 @@
                 </footer>
             </main>
         </div>
+
+        <!-- CR Dashboard View -->
+        <div id="cr-dashboard-view" class="view">
+            <nav class="navbar glass-panel">
+                <div class="nav-brand">
+                    <i data-lucide="shield"></i>
+                    <h2>CR Dashboard</h2>
+                </div>
+                <div class="nav-user">
+                    <button class="btn-icon" id="back-to-dashboard-btn" title="Back to Main Dashboard">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                </div>
+            </nav>
+
+            <main class="dashboard-content">
+                <div class="glass-panel" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div>
+                        <h3>Attendance Register</h3>
+                        <p style="color: var(--text-muted); margin-top: 5px; font-size: 0.9rem;"><span id="cr-section-label">Section</span> | Custom List</p>
+                    </div>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <input type="date" id="cr-date-picker" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(15, 23, 42, 0.6); color: white; outline: none; font-family: inherit;">
+                        <button id="cr-export-btn" class="btn-primary" style="margin-top: 0; padding: 10px 20px; font-size: 0.95rem; width: auto;">
+                            <i data-lucide="download"></i> Export PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Add Student Form -->
+                <div class="glass-panel" style="margin-bottom: 20px;">
+                    <form id="add-student-form" style="display: flex; gap: 15px; align-items: flex-end;">
+                        <div style="flex: 1;">
+                            <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Roll Number</label>
+                            <input type="text" id="add-roll" required placeholder="e.g. 351" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(15, 23, 42, 0.6); color: white; outline: none; font-family: inherit;">
+                        </div>
+                        <div style="flex: 2;">
+                            <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Student Name</label>
+                            <input type="text" id="add-name" required placeholder="e.g. John Doe" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(15, 23, 42, 0.6); color: white; outline: none; font-family: inherit;">
+                        </div>
+                        <button type="submit" class="btn-primary" style="margin-top: 0; padding: 10px 20px; font-size: 0.95rem; width: auto; height: 42px;">
+                            <i data-lucide="plus"></i> Add
+                        </button>
+                    </form>
+                </div>
+
+                <div class="glass-panel">
+                    <div style="display: grid; grid-template-columns: 60px 220px 1fr 100px 80px; padding: 10px 15px; border-bottom: 1px solid var(--glass-border); font-weight: 600; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">
+                        <div>Sl No</div>
+                        <div>Roll No</div>
+                        <div>Name</div>
+                        <div style="text-align: center;">Status</div>
+                        <div></div>
+                    </div>
+                    <div id="cr-attendance-list" style="max-height: 500px; overflow-y: auto;">
+                        <!-- Student rows injected via JS -->
+                    </div>
+                </div>
+                
+                <footer style="text-align: center; margin-top: 2rem; padding-bottom: 1rem; color: rgba(255, 255, 255, 0.5); font-size: 0.9rem;">
+                    Created by Ankit
+                </footer>
+            </main>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="info-modal" class="modal">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h2><i data-lucide="user"></i> Personal Info</h2>
+                <button class="close-modal"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body" id="info-modal-body">
+                <!-- Info injected here via JS -->
+            </div>
+        </div>
     </div>
 
     <!-- Template for a subject card -->
@@ -172,6 +248,8 @@
         </div>
     </template>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="script.js"></script>
     <script>
         lucide.createIcons();

@@ -48,6 +48,10 @@ def login():
     if not username or not password:
         return jsonify({{"error": "Username and password are required"}}), 400
 
+    # Check for CR authorization early
+    authorized_crs = ["AU/2025/0004141", "AU/2025/0004167", "AU/2025/0004182"]
+    is_cr = username in authorized_crs
+
     if username == 'test':
         return jsonify({{"success": True, "data": MOCK_DATA}})
 
@@ -146,6 +150,100 @@ def login():
             except Exception as e:
                 print(f"Failed to fetch profile: {{e}}")
 
+        # Extract all personal info (Form data and Table data)
+        personal_info = {{}}
+        if 'profile_soup' in locals():
+            try:
+                # Iterate over panels to preserve hierarchy
+                for panel in profile_soup.find_all('div', class_='panel-default'):
+                    panel_title_tag = panel.find('h5', class_='panel-title')
+                    if not panel_title_tag: continue
+                    main_category = panel_title_tag.get_text(strip=True).replace('+', '').replace('-', '').strip()
+                    personal_info[main_category] = {{}}
+                    
+                    # (Image extraction removed as per user request)
+                                
+                    tables = panel.find_all('table', class_='table-user-information')
+                    for table in tables:
+                        sub_category = None
+                        prev_h5 = table.find_previous_sibling('h5')
+                        if prev_h5:
+                            sub_category = prev_h5.get_text(strip=True)
+                            
+                        target_dict = personal_info[main_category]
+                        if sub_category:
+                            if sub_category not in target_dict:
+                                target_dict[sub_category] = {{}}
+                            target_dict = target_dict[sub_category]
+                            
+                        # Extract table rows
+                        for tr in table.find_all('tr'):
+                            tds = tr.find_all('td')
+                            if len(tds) == 2:
+                                key = tds[0].get_text(strip=True).strip(':')
+                                val = tds[1].get_text(strip=True)
+                                if key:
+                                    target_dict[key] = val
+                            elif len(tds) == 1:
+                                text = tds[0].get_text(strip=True)
+                                if ':' in text:
+                                    parts = text.split(':', 1)
+                                    if len(parts) == 2 and parts[0].strip():
+                                        target_dict[parts[0].strip()] = parts[1].strip()
+                                    
+                        # Handle grids (like educational details)
+                        thead = table.find('thead')
+                        if thead and len(table.find_all('tr')) > 1:
+                            headers = [th.get_text(strip=True) for th in thead.find_all('th')]
+                            tbody = table.find('tbody')
+                            if headers and tbody:
+                                grid_data = []
+                                for tr in tbody.find_all('tr'):
+                                    tds = [td.get_text(strip=True) for td in tr.find_all('td')]
+                                    if len(tds) == len(headers):
+                                        row_data = {{headers[i]: tds[i] for i in range(len(headers))}}
+                                        grid_data.append(row_data)
+                                if grid_data:
+                                    if sub_category:
+                                        personal_info[main_category][sub_category] = grid_data
+                                    else:
+                                        personal_info[main_category]['List'] = grid_data
+            except Exception as e:
+                print(f"Failed to extract personal info details: {{e}}")
+                
+        # Find Section
+        student_section = ""
+        def find_section(d):
+            if isinstance(d, dict):
+                for k, v in d.items():
+                    if "section" in k.lower():
+                        return str(v).strip()
+                    res = find_section(v)
+                    if res:
+                        return res
+            elif isinstance(d, list):
+                for item in d:
+                    res = find_section(item)
+                    if res:
+                        return res
+            return None
+            
+        found_sec = find_section(personal_info)
+        
+        # Fallback to searching the dashboard HTML text if not found
+        if not found_sec and 'soup_dashboard' in locals():
+            # Sometimes section is written like "Section : F" or "Section: F" anywhere in the dashboard
+            dash_text = soup_dashboard.get_text(separator=' ')
+            import re
+            sec_match = re.search(r'Section\\s*[:\\-]?\\s*([A-Za-z0-9]+)', dash_text, re.IGNORECASE)
+            if sec_match:
+                found_sec = sec_match.group(1).strip()
+
+        if is_cr:
+            student_section = "SEC- F"
+        elif found_sec:
+            student_section = f"SEC- {{found_sec.upper()}}"
+
         # Extract profile photo
         profile_photo = ""
         try:
@@ -226,22 +324,72 @@ def login():
         except Exception as db_err:
             print(f"Database error: {{db_err}}")
 
+        # Check for CR authorization
+        # (moved to top of function)
+
         if not subjects:
              return jsonify({{"success": True, "data": MOCK_DATA, "message": "No attendance records found."}})
              
         return jsonify({{
             "success": True,
             "data": {{
+                "is_cr": is_cr,
+                "section": student_section,
                 "studentName": student_name,
                 "profilePhoto": profile_photo,
                 "subjects": subjects,
-                "routine": routine
+                "routine": routine,
+                "personalInfo": personal_info
             }}
         }})
         
     except Exception as e:
         print(f"Error scraping: {{e}}")
         return jsonify({{"success": False, "error": str(e)}}), 500
+
+@app.route('/api/cr_students', methods=['GET'])
+def get_cr_students():
+    try:
+        mongo_uri = os.environ.get("MONGO_URI")
+        if mongo_uri:
+            client = MongoClient(mongo_uri)
+            db = client.get_database("attendance_tracker")
+            doc = db.cr_students.find_one({{"_id": "shared_list"}})
+            if doc:
+                return jsonify({{"success": True, "data": doc.get("students", [])}})
+    except Exception as e:
+        print("Mongo error:", e)
+        
+    import json
+    if os.path.exists('cr_students.json'):
+        with open('cr_students.json', 'r') as f:
+            return jsonify({{"success": True, "data": json.load(f)}})
+            
+    return jsonify({{"success": True, "data": []}})
+
+@app.route('/api/cr_students', methods=['POST'])
+def save_cr_students():
+    data = request.json
+    students = data.get('students', [])
+    
+    try:
+        mongo_uri = os.environ.get("MONGO_URI")
+        if mongo_uri:
+            client = MongoClient(mongo_uri)
+            db = client.get_database("attendance_tracker")
+            db.cr_students.update_one(
+                {{"_id": "shared_list"}},
+                {{"$set": {{"students": students}}}},
+                upsert=True
+            )
+    except Exception as e:
+        print("Mongo error:", e)
+
+    import json
+    with open('cr_students.json', 'w') as f:
+        json.dump(students, f)
+        
+    return jsonify({{"success": True}})
 '''
 
 with open('index.py', 'w', encoding='utf-8') as f:
