@@ -11,6 +11,7 @@ import urllib3
 import os
 from datetime import datetime
 from pymongo import MongoClient
+import concurrent.futures
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = Flask(__name__)
@@ -80,8 +81,11 @@ def login():
         if 'login' in login_response.url and 'dashboard' not in login_response.url:
             return jsonify({{"success": False, "error": "Invalid credentials or login failed"}}), 401
 
-        attendance_url = "https://adamasknowledgecity.ac.in/student/attendance"
-        attendance_response = session.get(attendance_url, verify=False)
+        def fetch_url(url):
+            return session.get(url, verify=False, timeout=10)
+            
+        attendance_response = fetch_url("https://adamasknowledgecity.ac.in/student/attendance")
+        r_routine = fetch_url("https://adamasknowledgecity.ac.in/student/routine")
         
         soup = BeautifulSoup(attendance_response.text, 'html.parser')
         
@@ -263,9 +267,7 @@ def login():
         # Extract Class Routine
         routine = []
         try:
-            routine_url = "https://adamasknowledgecity.ac.in/student/routine"
-            r_routine = session.get(routine_url, timeout=10)
-            if r_routine.status_code == 200:
+            if r_routine and r_routine.status_code == 200:
                 soup_routine = BeautifulSoup(r_routine.text, 'html.parser')
                 table = soup_routine.find('table', class_='table-bordered')
                 if table:
