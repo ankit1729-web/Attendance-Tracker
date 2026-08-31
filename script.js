@@ -30,6 +30,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const addNameInput = document.getElementById('add-name');
     const crSectionLabel = document.getElementById('cr-section-label');
     const userSection = document.getElementById('user-section');
+    const themeToggleBtn = document.querySelector('.theme-toggle-btn');
+
+    // Theme Toggle Logic
+    const toggleTheme = () => {
+        const currentTheme = document.body.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.body.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        
+        // Update icon
+        if (themeToggleBtn) {
+            const icon = themeToggleBtn.querySelector('i');
+            icon.setAttribute('data-lucide', newTheme === 'dark' ? 'sun' : 'moon');
+            lucide.createIcons({ root: themeToggleBtn });
+        }
+    };
+
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', toggleTheme);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.setAttribute('data-theme', 'dark');
+        if (themeToggleBtn) {
+            themeToggleBtn.querySelector('i').setAttribute('data-lucide', 'sun');
+        }
+    }
 
     // State
     let currentData = null;
@@ -442,6 +471,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 lowSubjectsCount++;
             }
 
+            // Add animation
+            card.classList.add('animate-fade-up');
+            card.style.animationDelay = `${index * 0.1}s`;
+
             subjectsContainer.appendChild(clone);
         });
 
@@ -762,6 +795,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("Could not generate PDF. Check console for errors.");
             }
         });
+    }
+
+    // Custom Cursor Logic
+    const cursorDot = document.querySelector('.cursor-dot');
+    const cursorOutline = document.querySelector('.cursor-outline');
+    
+    if (cursorDot && cursorOutline) {
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+            
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+            
+            // Use Element.animate if supported for smooth trailing
+            if (cursorOutline.animate) {
+                cursorOutline.animate({
+                    left: `${posX}px`,
+                    top: `${posY}px`
+                }, { duration: 500, fill: "forwards" });
+            } else {
+                cursorOutline.style.left = `${posX}px`;
+                cursorOutline.style.top = `${posY}px`;
+            }
+        });
+
+        // Add hover effect to interactive elements
+        const addHoverEvents = () => {
+            document.querySelectorAll('a, button, input, .status-toggle, .btn-tab, .btn-target').forEach(el => {
+                // Remove first to avoid duplicates if called multiple times
+                el.removeEventListener('mouseenter', addCursorHover);
+                el.removeEventListener('mouseleave', removeCursorHover);
+                
+                el.addEventListener('mouseenter', addCursorHover);
+                el.addEventListener('mouseleave', removeCursorHover);
+            });
+        };
+        
+        const addCursorHover = () => document.body.classList.add('cursor-hover');
+        const removeCursorHover = () => document.body.classList.remove('cursor-hover');
+        
+        // Initial setup
+        addHoverEvents();
+        
+        // Setup MutationObserver to watch for new interactive elements (like rendered subject cards)
+        const observer = new MutationObserver((mutations) => {
+            addHoverEvents();
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
     }
 
 });

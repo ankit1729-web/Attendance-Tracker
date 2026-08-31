@@ -24,6 +24,9 @@ HTML_CONTENT = """<!DOCTYPE html>
     <div class="cursor-dot"></div>
     <div class="cursor-outline"></div>
     <div id="app">
+        <button class="btn-icon theme-toggle-btn" style="position: fixed; top: 20px; right: 20px; z-index: 9999;" title="Toggle Theme">
+            <i data-lucide="moon"></i>
+        </button>
         <!-- Login View -->
         <div id="login-view" class="view active">
             <div class="glass-panel login-panel animate-fade-up">
@@ -82,8 +85,8 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             <main class="dashboard-content">
                 <div class="tabs-container" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                    <button class="btn-tab active" data-tab="attendance-tab" style="padding: 10px 20px; border-radius: 8px; border: none; background: rgba(0,0,0,0.1); color: var(--text-main); cursor: pointer; transition: all 0.3s; font-weight: 600;">Attendance</button>
-                    <button class="btn-tab" data-tab="routine-tab" style="padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.3s; font-weight: 600;">Class Routine</button>
+                    <button class="btn-tab active" data-tab="attendance-tab" style="padding: 10px 20px; border-radius: 8px; border: none; background: var(--tab-active-bg); color: var(--text-main); cursor: pointer; transition: all 0.3s; font-weight: 600;">Attendance</button>
+                    <button class="btn-tab" data-tab="routine-tab" style="padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: var(--tab-inactive-color); cursor: pointer; transition: all 0.3s; font-weight: 600;">Class Routine</button>
                 </div>
 
                 <div id="attendance-tab" class="tab-content active">
@@ -121,15 +124,15 @@ HTML_CONTENT = """<!DOCTYPE html>
                         <table class="routine-table" style="width: 100%; border-collapse: separate; border-spacing: 4px;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px; color: var(--text-main);">Day</th>
-                                    <th style="padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px; color: var(--text-main);">Period 1<br><small style="font-weight: normal; color: var(--text-muted);">09:30 - 10:25</small></th>
-                                    <th style="padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px; color: var(--text-main);">Period 2<br><small style="font-weight: normal; color: var(--text-muted);">10:30 - 11:25</small></th>
-                                    <th style="padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px; color: var(--text-main);">Period 3<br><small style="font-weight: normal; color: var(--text-muted);">11:30 - 12:25</small></th>
-                                    <th style="padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px; color: var(--text-main);">Period 4<br><small style="font-weight: normal; color: var(--text-muted);">12:30 - 13:25</small></th>
-                                    <th style="padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px; color: var(--text-main);">Period 5<br><small style="font-weight: normal; color: var(--text-muted);">13:30 - 14:25</small></th>
-                                    <th style="padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px; color: var(--text-main);">Period 6<br><small style="font-weight: normal; color: var(--text-muted);">14:30 - 15:25</small></th>
-                                    <th style="padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px; color: var(--text-main);">Period 7<br><small style="font-weight: normal; color: var(--text-muted);">15:30 - 16:25</small></th>
-                                    <th style="padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px; color: var(--text-main);">Period 8<br><small style="font-weight: normal; color: var(--text-muted);">16:30 - 17:25</small></th>
+                                    <th style="padding: 10px; background: var(--table-header-bg); border-radius: 8px; color: var(--text-main);">Day</th>
+                                    <th style="padding: 10px; background: var(--table-header-bg); border-radius: 8px; color: var(--text-main);">Period 1<br><small style="font-weight: normal; color: var(--text-muted);">09:30 - 10:25</small></th>
+                                    <th style="padding: 10px; background: var(--table-header-bg); border-radius: 8px; color: var(--text-main);">Period 2<br><small style="font-weight: normal; color: var(--text-muted);">10:30 - 11:25</small></th>
+                                    <th style="padding: 10px; background: var(--table-header-bg); border-radius: 8px; color: var(--text-main);">Period 3<br><small style="font-weight: normal; color: var(--text-muted);">11:30 - 12:25</small></th>
+                                    <th style="padding: 10px; background: var(--table-header-bg); border-radius: 8px; color: var(--text-main);">Period 4<br><small style="font-weight: normal; color: var(--text-muted);">12:30 - 13:25</small></th>
+                                    <th style="padding: 10px; background: var(--table-header-bg); border-radius: 8px; color: var(--text-main);">Period 5<br><small style="font-weight: normal; color: var(--text-muted);">13:30 - 14:25</small></th>
+                                    <th style="padding: 10px; background: var(--table-header-bg); border-radius: 8px; color: var(--text-main);">Period 6<br><small style="font-weight: normal; color: var(--text-muted);">14:30 - 15:25</small></th>
+                                    <th style="padding: 10px; background: var(--table-header-bg); border-radius: 8px; color: var(--text-main);">Period 7<br><small style="font-weight: normal; color: var(--text-muted);">15:30 - 16:25</small></th>
+                                    <th style="padding: 10px; background: var(--table-header-bg); border-radius: 8px; color: var(--text-main);">Period 8<br><small style="font-weight: normal; color: var(--text-muted);">16:30 - 17:25</small></th>
                                 </tr>
                             </thead>
                             <tbody id="routine-tbody">
@@ -166,7 +169,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                         <p style="color: var(--text-muted); margin-top: 5px; font-size: 0.9rem;"><span id="cr-section-label">Section</span> | Custom List</p>
                     </div>
                     <div style="display: flex; gap: 15px; align-items: center;">
-                        <input type="date" id="cr-date-picker" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.6); color: var(--text-main); outline: none; font-family: inherit;">
+                        <input type="date" id="cr-date-picker" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--cr-input-bg); color: var(--text-main); outline: none; font-family: inherit;">
                         <button id="cr-export-btn" class="btn-primary" style="margin-top: 0; padding: 10px 20px; font-size: 0.95rem; width: auto;">
                             <i data-lucide="download"></i> Export PDF
                         </button>
@@ -178,11 +181,11 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <form id="add-student-form" style="display: flex; gap: 15px; align-items: flex-end;">
                         <div style="flex: 1;">
                             <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Roll Number</label>
-                            <input type="text" id="add-roll" required placeholder="e.g. 351" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.6); color: var(--text-main); outline: none; font-family: inherit;">
+                            <input type="text" id="add-roll" required placeholder="e.g. 351" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--cr-input-bg); color: var(--text-main); outline: none; font-family: inherit;">
                         </div>
                         <div style="flex: 2;">
                             <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Student Name</label>
-                            <input type="text" id="add-name" required placeholder="e.g. John Doe" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.6); color: var(--text-main); outline: none; font-family: inherit;">
+                            <input type="text" id="add-name" required placeholder="e.g. John Doe" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--cr-input-bg); color: var(--text-main); outline: none; font-family: inherit;">
                         </div>
                         <button type="submit" class="btn-primary" style="margin-top: 0; padding: 10px 20px; font-size: 0.95rem; width: auto; height: 42px;">
                             <i data-lucide="plus"></i> Add
@@ -283,6 +286,42 @@ CSS_CONTENT = """:root {
     --text-main: #1e293b;
     --text-muted: #64748b;
     --glass-border: rgba(0, 0, 0, 0.1);
+    
+    --tab-active-bg: rgba(0,0,0,0.1);
+    --tab-inactive-color: var(--text-muted);
+    --table-header-bg: rgba(0,0,0,0.05);
+    --input-bg: rgba(255, 255, 255, 0.9);
+    --cr-input-bg: rgba(255, 255, 255, 0.6);
+    --blob-1-bg: rgba(0, 86, 164, 0.3);
+    --blob-2-bg: rgba(141, 198, 63, 0.2);
+    --blob-3-bg: rgba(14, 165, 233, 0.2);
+    --bg-gradient-start: #e2e8f0;
+    --bg-gradient-end: #f8fafc;
+}
+
+[data-theme="dark"] {
+    --bg-dark: #0f172a;
+    --bg-card: rgba(30, 41, 59, 0.7);
+    --primary: #8b5cf6;
+    --primary-hover: #7c3aed;
+    --accent: #06b6d4;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --glass-border: rgba(255, 255, 255, 0.1);
+    
+    --tab-active-bg: rgba(255,255,255,0.1);
+    --tab-inactive-color: rgba(255,255,255,0.7);
+    --table-header-bg: rgba(255,255,255,0.1);
+    --input-bg: rgba(15, 23, 42, 0.6);
+    --cr-input-bg: rgba(15, 23, 42, 0.6);
+    --blob-1-bg: var(--primary);
+    --blob-2-bg: var(--accent);
+    --blob-3-bg: #ec4899;
+    --bg-gradient-start: #1e1b4b;
+    --bg-gradient-end: #0f172a;
 }
 
 * {
@@ -309,7 +348,7 @@ body {
     height: 100vh;
     z-index: -1;
     overflow: hidden;
-    background: radial-gradient(circle at top right, #e2e8f0, #f8fafc);
+    background: radial-gradient(circle at top right, var(--bg-gradient-start), var(--bg-gradient-end));
 }
 
 .blob {
@@ -323,7 +362,7 @@ body {
 .blob-1 {
     width: 400px;
     height: 400px;
-    background: rgba(0, 86, 164, 0.3);
+    background: var(--blob-1-bg);
     top: -100px;
     left: -100px;
 }
@@ -331,7 +370,7 @@ body {
 .blob-2 {
     width: 500px;
     height: 500px;
-    background: rgba(141, 198, 63, 0.2);
+    background: var(--blob-2-bg);
     bottom: -200px;
     right: -100px;
     animation-delay: -5s;
@@ -340,7 +379,7 @@ body {
 .blob-3 {
     width: 300px;
     height: 300px;
-    background: rgba(14, 165, 233, 0.2);
+    background: var(--blob-3-bg);
     top: 40%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -433,7 +472,7 @@ body {
 .input-group input {
     width: 100%;
     padding: 1rem 1rem 1rem 3rem;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--input-bg);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
     color: var(--text-main);
@@ -1109,6 +1148,35 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
     const addNameInput = document.getElementById('add-name');
     const crSectionLabel = document.getElementById('cr-section-label');
     const userSection = document.getElementById('user-section');
+    const themeToggleBtn = document.querySelector('.theme-toggle-btn');
+
+    // Theme Toggle Logic
+    const toggleTheme = () => {
+        const currentTheme = document.body.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.body.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        
+        // Update icon
+        if (themeToggleBtn) {
+            const icon = themeToggleBtn.querySelector('i');
+            icon.setAttribute('data-lucide', newTheme === 'dark' ? 'sun' : 'moon');
+            lucide.createIcons({ root: themeToggleBtn });
+        }
+    };
+
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', toggleTheme);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.setAttribute('data-theme', 'dark');
+        if (themeToggleBtn) {
+            themeToggleBtn.querySelector('i').setAttribute('data-lucide', 'sun');
+        }
+    }
 
     // State
     let currentData = null;
