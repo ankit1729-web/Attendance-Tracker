@@ -72,8 +72,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <img id="user-avatar" src="" alt="Profile Photo" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid var(--primary); display: none;">
                     
                     <div class="dropdown">
-                        <button class="btn-icon" id="academics-btn" title="Academics">
-                            <i data-lucide="book-open"></i>
+                        <button class="dropbtn" id="academics-btn" style="background: transparent; border: none; color: var(--text-main); font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; font-family: inherit;">
+                            Academics <i data-lucide="chevron-down" style="width: 18px; height: 18px;"></i>
                         </button>
                         <div class="dropdown-menu" id="academics-dropdown">
                             <a href="#" class="dropdown-item" id="nav-info"><i data-lucide="user"></i> Personal Info</a>

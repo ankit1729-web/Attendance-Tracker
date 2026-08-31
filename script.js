@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addNameInput = document.getElementById('add-name');
     const crSectionLabel = document.getElementById('cr-section-label');
     const userSection = document.getElementById('user-section');
-    const themeToggleBtn = document.querySelector('.theme-toggle-btn');
+    const themeToggleBtns = document.querySelectorAll('.theme-toggle-btn');
 
     // Theme Toggle Logic
     const toggleTheme = () => {
@@ -39,25 +39,30 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         
-        // Update icon
-        if (themeToggleBtn) {
-            const icon = themeToggleBtn.querySelector('i');
-            icon.setAttribute('data-lucide', newTheme === 'dark' ? 'sun' : 'moon');
-            lucide.createIcons({ root: themeToggleBtn });
-        }
+        // Update icons
+        themeToggleBtns.forEach(btn => {
+            if (btn) {
+                const icon = btn.querySelector('i');
+                if (icon) icon.setAttribute('data-lucide', newTheme === 'dark' ? 'sun' : 'moon');
+                lucide.createIcons({ root: btn });
+            }
+        });
     };
 
-    if (themeToggleBtn) {
-        themeToggleBtn.addEventListener('click', toggleTheme);
-    }
+    themeToggleBtns.forEach(btn => {
+        if (btn) btn.addEventListener('click', toggleTheme);
+    });
 
     // Load saved theme
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
         document.body.setAttribute('data-theme', 'dark');
-        if (themeToggleBtn) {
-            themeToggleBtn.querySelector('i').setAttribute('data-lucide', 'sun');
-        }
+        themeToggleBtns.forEach(btn => {
+            if (btn) {
+                const icon = btn.querySelector('i');
+                if (icon) icon.setAttribute('data-lucide', 'sun');
+            }
+        });
     }
 
     // State
