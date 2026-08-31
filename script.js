@@ -566,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
         todaysContainer.innerHTML = '';
         
         if (!currentData || !currentData.routine || currentData.routine.length === 0) {
-            todaysContainer.innerHTML = '<p style="text-align:center; color: var(--text-muted); width: 100%;">No class routine available to determine today\'s classes.</p>';
+            todaysContainer.innerHTML = `<p style="text-align:center; color: var(--text-muted); width: 100%;">No class routine available to determine today's classes.</p>`;
             return;
         }
 
@@ -577,7 +577,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const todayRoutine = currentData.routine.find(r => r.day.startsWith(today) || r.day === today);
         
         if (!todayRoutine || !todayRoutine.schedule || todayRoutine.schedule.filter(s => s.subject).length === 0) {
-            todaysContainer.innerHTML = '<p style="text-align:center; color: var(--text-muted); width: 100%;">No classes scheduled for today.</p>';
+            todaysContainer.innerHTML = `<p style="text-align:center; color: var(--text-muted); width: 100%;">No classes scheduled for today.</p>`;
             return;
         }
         
