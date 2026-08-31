@@ -21,10 +21,12 @@ HTML_CONTENT = """<!DOCTYPE html>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
     <div id="app">
         <!-- Login View -->
         <div id="login-view" class="view active">
-            <div class="glass-panel login-panel">
+            <div class="glass-panel login-panel animate-fade-up">
                 <div class="login-header">
                     <img src="https://upload.wikimedia.org/wikipedia/en/0/05/Adamas_University_Logo.png" alt="Adamas University Logo" class="adamas-logo">
                     <h1>Attendance Tracker</h1>
@@ -1019,6 +1021,61 @@ body {
     background: rgba(139, 92, 246, 0.2);
     color: var(--primary);
 }
+
+/* Custom Animated Cursor */
+@media (pointer: fine) {
+    body, a, button, input, select, .status-toggle, .btn-tab, .btn-target {
+        cursor: none;
+    }
+    
+    .cursor-dot {
+        width: 8px;
+        height: 8px;
+        background-color: var(--primary);
+    }
+    
+    .cursor-outline {
+        width: 40px;
+        height: 40px;
+        border: 2px solid var(--primary);
+        opacity: 0.4;
+    }
+    
+    .cursor-dot, .cursor-outline {
+        position: fixed;
+        top: 0;
+        left: 0;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        z-index: 10000;
+        pointer-events: none;
+        transition: width 0.2s, height 0.2s, background-color 0.2s, border-color 0.2s;
+    }
+    
+    body.cursor-hover .cursor-outline {
+        width: 60px;
+        height: 60px;
+        background-color: rgba(0, 86, 164, 0.1);
+        border-color: transparent;
+    }
+}
+
+/* Page Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-up {
+    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+}
 """
 JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
@@ -1464,6 +1521,10 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
                 lowSubjectsCount++;
             }
 
+            // Add animation
+            card.classList.add('animate-fade-up');
+            card.style.animationDelay = `${index * 0.1}s`;
+
             subjectsContainer.appendChild(clone);
         });
 
@@ -1784,6 +1845,55 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
                 alert("Could not generate PDF. Check console for errors.");
             }
         });
+    }
+
+    // Custom Cursor Logic
+    const cursorDot = document.querySelector('.cursor-dot');
+    const cursorOutline = document.querySelector('.cursor-outline');
+    
+    if (cursorDot && cursorOutline) {
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+            
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+            
+            // Use Element.animate if supported for smooth trailing
+            if (cursorOutline.animate) {
+                cursorOutline.animate({
+                    left: `${posX}px`,
+                    top: `${posY}px`
+                }, { duration: 500, fill: "forwards" });
+            } else {
+                cursorOutline.style.left = `${posX}px`;
+                cursorOutline.style.top = `${posY}px`;
+            }
+        });
+
+        // Add hover effect to interactive elements
+        const addHoverEvents = () => {
+            document.querySelectorAll('a, button, input, .status-toggle, .btn-tab, .btn-target').forEach(el => {
+                // Remove first to avoid duplicates if called multiple times
+                el.removeEventListener('mouseenter', addCursorHover);
+                el.removeEventListener('mouseleave', removeCursorHover);
+                
+                el.addEventListener('mouseenter', addCursorHover);
+                el.addEventListener('mouseleave', removeCursorHover);
+            });
+        };
+        
+        const addCursorHover = () => document.body.classList.add('cursor-hover');
+        const removeCursorHover = () => document.body.classList.remove('cursor-hover');
+        
+        // Initial setup
+        addHoverEvents();
+        
+        // Setup MutationObserver to watch for new interactive elements (like rendered subject cards)
+        const observer = new MutationObserver((mutations) => {
+            addHoverEvents();
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
     }
 
 });
