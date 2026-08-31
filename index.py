@@ -24,12 +24,12 @@ HTML_CONTENT = """<!DOCTYPE html>
     <div class="cursor-dot"></div>
     <div class="cursor-outline"></div>
     <div id="app">
-        <button class="btn-icon theme-toggle-btn" style="position: fixed; top: 20px; right: 20px; z-index: 9999;" title="Toggle Theme">
-            <i data-lucide="moon"></i>
-        </button>
         <!-- Login View -->
         <div id="login-view" class="view active">
-            <div class="glass-panel login-panel animate-fade-up">
+            <div class="glass-panel login-panel animate-fade-up" style="position: relative;">
+                <button class="btn-icon theme-toggle-btn" style="position: absolute; top: 20px; right: 20px;" title="Toggle Theme">
+                    <i data-lucide="moon"></i>
+                </button>
                 <div class="login-header">
                     <img src="https://upload.wikimedia.org/wikipedia/en/0/05/Adamas_University_Logo.png" alt="Adamas University Logo" class="adamas-logo">
                     <h1>Attendance Tracker</h1>
@@ -67,16 +67,22 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <h2>Adamas Attendence Tracker</h2>
                 </div>
                 <div class="nav-user">
+                    <div id="user-greeting" style="font-weight: 600; margin-right: 5px;">Hello, Student</div>
+                    <span id="user-section" style="color: var(--text-muted); font-size: 0.9rem; margin-right: 15px;"></span>
+                    <img id="user-avatar" src="" alt="Profile Photo" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid var(--primary); display: none;">
+                    
                     <div class="dropdown">
-                        <button class="dropbtn" id="academics-btn">Academics <i data-lucide="chevron-down"></i></button>
-                        <div class="dropdown-content" id="academics-dropdown">
-                            <a href="#" id="nav-info"><i data-lucide="info"></i> Info</a>
-                            <a href="#" id="nav-cr-dashboard" style="display: none;"><i data-lucide="shield"></i> CR Dashboard</a>
+                        <button class="btn-icon" id="academics-btn" title="Academics">
+                            <i data-lucide="book-open"></i>
+                        </button>
+                        <div class="dropdown-menu" id="academics-dropdown">
+                            <a href="#" class="dropdown-item" id="nav-info"><i data-lucide="user"></i> Personal Info</a>
+                            <a href="#" class="dropdown-item" id="nav-cr-dashboard" style="display: none;"><i data-lucide="shield"></i> CR Dashboard</a>
                         </div>
                     </div>
-                    <img id="user-avatar" src="" alt="Profile" style="display: none; width: 36px; height: 36px; border-radius: 50%; object-fit: cover; margin-right: 10px; border: 2px solid rgba(255,255,255,0.2);">
-                    <span id="user-greeting">Hello, Student</span>
-                    <span id="user-section" style="font-size: 0.9rem; margin-left: 10px; color: var(--primary);"></span>
+                    <button class="btn-icon theme-toggle-btn" title="Toggle Theme">
+                        <i data-lucide="moon"></i>
+                    </button>
                     <button class="btn-icon" id="logout-btn" title="Logout">
                         <i data-lucide="log-out"></i>
                     </button>
@@ -1148,7 +1154,7 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
     const addNameInput = document.getElementById('add-name');
     const crSectionLabel = document.getElementById('cr-section-label');
     const userSection = document.getElementById('user-section');
-    const themeToggleBtn = document.querySelector('.theme-toggle-btn');
+    const themeToggleBtns = document.querySelectorAll('.theme-toggle-btn');
 
     // Theme Toggle Logic
     const toggleTheme = () => {
@@ -1157,25 +1163,30 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
         document.body.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         
-        // Update icon
-        if (themeToggleBtn) {
-            const icon = themeToggleBtn.querySelector('i');
-            icon.setAttribute('data-lucide', newTheme === 'dark' ? 'sun' : 'moon');
-            lucide.createIcons({ root: themeToggleBtn });
-        }
+        // Update icons
+        themeToggleBtns.forEach(btn => {
+            if (btn) {
+                const icon = btn.querySelector('i');
+                if (icon) icon.setAttribute('data-lucide', newTheme === 'dark' ? 'sun' : 'moon');
+                lucide.createIcons({ root: btn });
+            }
+        });
     };
 
-    if (themeToggleBtn) {
-        themeToggleBtn.addEventListener('click', toggleTheme);
-    }
+    themeToggleBtns.forEach(btn => {
+        if (btn) btn.addEventListener('click', toggleTheme);
+    });
 
     // Load saved theme
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
         document.body.setAttribute('data-theme', 'dark');
-        if (themeToggleBtn) {
-            themeToggleBtn.querySelector('i').setAttribute('data-lucide', 'sun');
-        }
+        themeToggleBtns.forEach(btn => {
+            if (btn) {
+                const icon = btn.querySelector('i');
+                if (icon) icon.setAttribute('data-lucide', 'sun');
+            }
+        });
     }
 
     // State
