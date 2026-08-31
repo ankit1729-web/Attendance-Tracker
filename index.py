@@ -92,6 +92,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             <main class="dashboard-content">
                 <div class="tabs-container" style="display: flex; gap: 10px; margin-bottom: 20px;">
                     <button class="btn-tab active" data-tab="attendance-tab" style="padding: 10px 20px; border-radius: 8px; border: none; background: var(--tab-active-bg); color: var(--text-main); cursor: pointer; transition: all 0.3s; font-weight: 600;">Attendance</button>
+                    <button class="btn-tab" data-tab="todays-tab" style="padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: var(--tab-inactive-color); cursor: pointer; transition: all 0.3s; font-weight: 600;">Today's Classes</button>
                     <button class="btn-tab" data-tab="routine-tab" style="padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: var(--tab-inactive-color); cursor: pointer; transition: all 0.3s; font-weight: 600;">Class Routine</button>
                 </div>
 
@@ -118,6 +119,18 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <span>Currently using mock data. You must update app.py with your college's specific HTML structure to fetch real data.</span>
                 </div>
                 </div> <!-- End attendance tab -->
+
+                <div id="todays-tab" class="tab-content" style="display: none;">
+                    <header class="dashboard-header">
+                        <div>
+                            <h1>Today's Classes</h1>
+                            <p>Attendance status for today's subjects.</p>
+                        </div>
+                    </header>
+                    <div class="stats-grid" id="todays-container" style="margin-top: 1rem;">
+                        <!-- Today's classes injected via JS -->
+                    </div>
+                </div>
 
                 <div id="routine-tab" class="tab-content" style="display: none;">
                     <header class="dashboard-header">
@@ -1132,6 +1145,7 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.getElementById('logout-btn');
     const userGreeting = document.getElementById('user-greeting');
     const subjectsContainer = document.getElementById('subjects-container');
+    const todaysContainer = document.getElementById('todays-container');
     const targetBtns = document.querySelectorAll('.btn-target');
     const scraperWarning = document.getElementById('scraper-warning');
     const tabBtns = document.querySelectorAll('.btn-tab');
@@ -1457,6 +1471,7 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
             dashboardView.classList.add('active');
             renderSubjects();
             renderRoutine();
+            renderTodaysAttendance();
             
             // Check CR status and show link if true
             if (currentData.is_cr) {
@@ -1680,6 +1695,77 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
 
             routineTbody.appendChild(tr);
         });
+        lucide.createIcons();
+    }
+
+    function renderTodaysAttendance() {
+        if (!todaysContainer) return;
+        todaysContainer.innerHTML = '';
+        
+        if (!currentData || !currentData.routine || currentData.routine.length === 0) {
+            todaysContainer.innerHTML = '<p style="text-align:center; color: var(--text-muted); width: 100%;">No class routine available to determine today\'s classes.</p>';
+            return;
+        }
+
+        // Determine today's day name (e.g., "Monday")
+        const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+        
+        // Find today's routine
+        const todayRoutine = currentData.routine.find(r => r.day.startsWith(today) || r.day === today);
+        
+        if (!todayRoutine || !todayRoutine.schedule || todayRoutine.schedule.filter(s => s.subject).length === 0) {
+            todaysContainer.innerHTML = '<p style="text-align:center; color: var(--text-muted); width: 100%;">No classes scheduled for today.</p>';
+            return;
+        }
+        
+        const template = document.getElementById('subject-card-template');
+        let index = 0;
+        
+        todayRoutine.schedule.forEach(slot => {
+            if (!slot.subject) return;
+            
+            const clone = template.content.cloneNode(true);
+            const card = clone.querySelector('.subject-card');
+            
+            // Adjust card to show today's specific info
+            card.querySelector('.subject-name').textContent = slot.subject;
+            card.querySelector('.subject-name').title = slot.subject;
+            
+            // Hide progress circle
+            card.querySelector('.progress-circle-container').style.display = 'none';
+            
+            // Show time instead of attended/total
+            const details = card.querySelector('.attendance-details');
+            details.innerHTML = `
+                <div class="detail" style="width: 100%;">
+                    <span class="label">Teacher & Room</span>
+                    <span class="value" style="font-size: 1rem; text-align: center;">${slot.teacher || 'N/A'}<br><small>${slot.room || ''}</small></span>
+                </div>
+            `;
+            
+            const actionBox = card.querySelector('.action-box');
+            if (slot.attendance === 'Present') {
+                actionBox.classList.add('bg-good');
+                actionBox.querySelector('.action-text').textContent = 'Present';
+                actionBox.querySelector('.status-icon').innerHTML = `<i data-lucide="check-circle" class="status-good"></i>`;
+            } else if (slot.attendance === 'Absent') {
+                actionBox.classList.add('bg-bad');
+                actionBox.querySelector('.action-text').textContent = 'Absent';
+                actionBox.querySelector('.status-icon').innerHTML = `<i data-lucide="x-circle" class="status-bad"></i>`;
+            } else {
+                actionBox.classList.add('bg-warn');
+                actionBox.querySelector('.action-text').textContent = 'Not marked yet';
+                actionBox.querySelector('.status-icon').innerHTML = `<i data-lucide="clock" class="status-warn"></i>`;
+            }
+            
+            card.classList.add('animate-fade-up');
+            card.style.animationDelay = `${index * 0.1}s`;
+            index++;
+            
+            todaysContainer.appendChild(clone);
+        });
+        
+        lucide.createIcons();
     }
 
     // CR Dashboard Logic
@@ -1976,6 +2062,7 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
+
 """
 
 MOCK_DATA = {
@@ -2254,12 +2341,23 @@ def login():
                                 subject = subject_span.get_text(strip=True)
                                 teacher_span = td.find('span', class_='class-teacher')
                                 room_span = td.find('span', class_='bulding-room')
+                                
+                                # Extract attendance status
+                                att_status = None
+                                present_span = td.find('span', class_='attendance_status_present')
+                                absent_span = td.find('span', class_='attendance_status_absent')
+                                if present_span:
+                                    att_status = 'Present'
+                                elif absent_span:
+                                    att_status = 'Absent'
+                                    
                                 day_schedule.append({
                                     "period": period_idx,
                                     "colspan": colspan,
                                     "subject": subject,
                                     "teacher": teacher_span.get_text(strip=True) if teacher_span else "",
-                                    "room": room_span.get_text(strip=True) if room_span else ""
+                                    "room": room_span.get_text(strip=True) if room_span else "",
+                                    "attendance": att_status
                                 })
                             else:
                                 day_schedule.append({

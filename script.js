@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.getElementById('logout-btn');
     const userGreeting = document.getElementById('user-greeting');
     const subjectsContainer = document.getElementById('subjects-container');
+    const todaysContainer = document.getElementById('todays-container');
     const targetBtns = document.querySelectorAll('.btn-target');
     const scraperWarning = document.getElementById('scraper-warning');
     const tabBtns = document.querySelectorAll('.btn-tab');
@@ -333,6 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dashboardView.classList.add('active');
             renderSubjects();
             renderRoutine();
+            renderTodaysAttendance();
             
             // Check CR status and show link if true
             if (currentData.is_cr) {
@@ -556,6 +558,77 @@ document.addEventListener('DOMContentLoaded', () => {
 
             routineTbody.appendChild(tr);
         });
+        lucide.createIcons();
+    }
+
+    function renderTodaysAttendance() {
+        if (!todaysContainer) return;
+        todaysContainer.innerHTML = '';
+        
+        if (!currentData || !currentData.routine || currentData.routine.length === 0) {
+            todaysContainer.innerHTML = '<p style="text-align:center; color: var(--text-muted); width: 100%;">No class routine available to determine today\'s classes.</p>';
+            return;
+        }
+
+        // Determine today's day name (e.g., "Monday")
+        const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+        
+        // Find today's routine
+        const todayRoutine = currentData.routine.find(r => r.day.startsWith(today) || r.day === today);
+        
+        if (!todayRoutine || !todayRoutine.schedule || todayRoutine.schedule.filter(s => s.subject).length === 0) {
+            todaysContainer.innerHTML = '<p style="text-align:center; color: var(--text-muted); width: 100%;">No classes scheduled for today.</p>';
+            return;
+        }
+        
+        const template = document.getElementById('subject-card-template');
+        let index = 0;
+        
+        todayRoutine.schedule.forEach(slot => {
+            if (!slot.subject) return;
+            
+            const clone = template.content.cloneNode(true);
+            const card = clone.querySelector('.subject-card');
+            
+            // Adjust card to show today's specific info
+            card.querySelector('.subject-name').textContent = slot.subject;
+            card.querySelector('.subject-name').title = slot.subject;
+            
+            // Hide progress circle
+            card.querySelector('.progress-circle-container').style.display = 'none';
+            
+            // Show time instead of attended/total
+            const details = card.querySelector('.attendance-details');
+            details.innerHTML = `
+                <div class="detail" style="width: 100%;">
+                    <span class="label">Teacher & Room</span>
+                    <span class="value" style="font-size: 1rem; text-align: center;">${slot.teacher || 'N/A'}<br><small>${slot.room || ''}</small></span>
+                </div>
+            `;
+            
+            const actionBox = card.querySelector('.action-box');
+            if (slot.attendance === 'Present') {
+                actionBox.classList.add('bg-good');
+                actionBox.querySelector('.action-text').textContent = 'Present';
+                actionBox.querySelector('.status-icon').innerHTML = `<i data-lucide="check-circle" class="status-good"></i>`;
+            } else if (slot.attendance === 'Absent') {
+                actionBox.classList.add('bg-bad');
+                actionBox.querySelector('.action-text').textContent = 'Absent';
+                actionBox.querySelector('.status-icon').innerHTML = `<i data-lucide="x-circle" class="status-bad"></i>`;
+            } else {
+                actionBox.classList.add('bg-warn');
+                actionBox.querySelector('.action-text').textContent = 'Not marked yet';
+                actionBox.querySelector('.status-icon').innerHTML = `<i data-lucide="clock" class="status-warn"></i>`;
+            }
+            
+            card.classList.add('animate-fade-up');
+            card.style.animationDelay = `${index * 0.1}s`;
+            index++;
+            
+            todaysContainer.appendChild(clone);
+        });
+        
+        lucide.createIcons();
     }
 
     // CR Dashboard Logic
