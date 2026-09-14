@@ -318,9 +318,10 @@ def login():
         except Exception as e:
             print(f"Failed to fetch routine: {{e}}")
 
-        # Track login in database
+        # Track login in database & auto-sync name to CR list
         try:
             mongo_uri = os.environ.get("MONGO_URI")
+            db = None
             if mongo_uri:
                 client = MongoClient(mongo_uri)
                 db = client.get_database("attendance_tracker")
@@ -330,8 +331,69 @@ def login():
                     "studentName": student_name,
                     "timestamp": datetime.utcnow()
                 }})
+                
+            # Helper to search roll number from personal_info
+            def find_roll(d):
+                if isinstance(d, dict):
+                    for k, v in d.items():
+                        if any(x in k.lower() for x in ["roll", "reg", "enroll", "student id"]):
+                            if isinstance(v, str) and v.strip() and v.strip() != "-":
+                                return v.strip()
+                        res = find_roll(v)
+                        if res:
+                            return res
+                elif isinstance(d, list):
+                    for item in d:
+                        res = find_roll(item)
+                        if res:
+                            return res
+                return None
+                
+            extracted_roll = find_roll(personal_info) or username or ""
+            
+            # If we have a valid student name and roll, auto-sync to shared CR list
+            if student_name and student_name.strip() and student_name.lower() not in ["student", "john doe", "-"]:
+                # 1. Update in MongoDB if available
+                if db:
+                    doc = db.cr_students.find_one({{"_id": "shared_list"}})
+                    if doc and "students" in doc:
+                        st_list = doc["students"]
+                        updated = False
+                        for s in st_list:
+                            s_roll = s.get("rollNo", "")
+                            # Match roll exact, or substring, or trailing number
+                            if s_roll and (extracted_roll.lower() in s_roll.lower() or s_roll.lower() in extracted_roll.lower() or (extracted_roll.isdigit() and s_roll.endswith(extracted_roll))):
+                                if s.get("name") != student_name:
+                                    s["name"] = student_name
+                                    updated = True
+                                break
+                        if updated:
+                            db.cr_students.update_one(
+                                {{"_id": "shared_list"}},
+                                {{"$set": {{"students": st_list, "updatedAt": datetime.utcnow()}}}}
+                            )
+                            
+                # 2. Update local cr_students.json if exists and writable
+                if os.path.exists('cr_students.json'):
+                    try:
+                        import json
+                        with open('cr_students.json', 'r', encoding='utf-8') as f:
+                            local_list = json.load(f)
+                        updated_loc = False
+                        for s in local_list:
+                            s_roll = s.get("rollNo", "")
+                            if s_roll and (extracted_roll.lower() in s_roll.lower() or s_roll.lower() in extracted_roll.lower() or (extracted_roll.isdigit() and s_roll.endswith(extracted_roll))):
+                                if s.get("name") != student_name:
+                                    s["name"] = student_name
+                                    updated_loc = True
+                                break
+                        if updated_loc:
+                            with open('cr_students.json', 'w', encoding='utf-8') as f:
+                                json.dump(local_list, f, indent=2)
+                    except Exception:
+                        pass
         except Exception as db_err:
-            print(f"Database error: {{db_err}}")
+            print(f"Database / Sync error: {{db_err}}")
 
         # Check for CR authorization
         # (moved to top of function)
@@ -364,22 +426,26 @@ def get_cr_students():
             client = MongoClient(mongo_uri)
             db = client.get_database("attendance_tracker")
             doc = db.cr_students.find_one({{"_id": "shared_list"}})
-            if doc:
+            if doc and "students" in doc and len(doc["students"]) > 0:
                 return jsonify({{"success": True, "data": doc.get("students", [])}})
     except Exception as e:
         print("Mongo error:", e)
         
     import json
-    if os.path.exists('cr_students.json'):
-        with open('cr_students.json', 'r') as f:
-            return jsonify({{"success": True, "data": json.load(f)}})
+    try:
+        if os.path.exists('cr_students.json'):
+            with open('cr_students.json', 'r', encoding='utf-8') as f:
+                return jsonify({{"success": True, "data": json.load(f)}})
+    except Exception as e:
+        print("File read error:", e)
             
     return jsonify({{"success": True, "data": []}})
 
 @app.route('/api/cr_students', methods=['POST'])
 def save_cr_students():
-    data = request.json
+    data = request.json or {{}}
     students = data.get('students', [])
+    saved_mongo = False
     
     try:
         mongo_uri = os.environ.get("MONGO_URI")
@@ -388,17 +454,21 @@ def save_cr_students():
             db = client.get_database("attendance_tracker")
             db.cr_students.update_one(
                 {{"_id": "shared_list"}},
-                {{"$set": {{"students": students}}}},
+                {{"$set": {{"students": students, "updatedAt": datetime.utcnow()}}}},
                 upsert=True
             )
+            saved_mongo = True
     except Exception as e:
         print("Mongo error:", e)
 
-    import json
-    with open('cr_students.json', 'w') as f:
-        json.dump(students, f)
+    try:
+        import json
+        with open('cr_students.json', 'w', encoding='utf-8') as f:
+            json.dump(students, f, indent=2)
+    except Exception as e:
+        print("Local file write error (normal on serverless):", e)
         
-    return jsonify({{"success": True}})
+    return jsonify({{"success": True, "saved_mongo": saved_mongo}})
 '''
 
 with open('index.py', 'w', encoding='utf-8') as f:

@@ -10,15 +10,34 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = Flask(__name__)
 
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' https: data:; "
+        "connect-src 'self'"
+    )
+    return response
+
 HTML_CONTENT = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adamas Attendence Tracker</title>
+    <meta name="description" content="Official Adamas University student attendance tracker. View your attendance records, class routine, and academic progress securely.">
+    <meta name="robots" content="index, follow">
+    <title>Adamas Attendance Tracker - Official Student Portal</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="cursor-dot"></div>
@@ -50,6 +69,12 @@ HTML_CONTENT = """<!DOCTYPE html>
                     </button>
                     <div id="login-error" class="error-msg"></div>
                 </form>
+                <div class="login-disclaimer" style="margin-top: 1.5rem; padding: 0.75rem 1rem; background: rgba(0, 86, 164, 0.08); border-radius: 10px; border: 1px solid rgba(0, 86, 164, 0.15);">
+                    <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; text-align: center;">
+                        <i data-lucide="shield-check" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i>
+                        This is an <strong>official student tool</strong> for Adamas University. Your credentials are securely used to fetch attendance data from the university portal and are <strong>never stored</strong>.
+                    </p>
+                </div>
             </div>
             
             <div class="animated-bg">
@@ -92,7 +117,6 @@ HTML_CONTENT = """<!DOCTYPE html>
             <main class="dashboard-content">
                 <div class="tabs-container" style="display: flex; gap: 10px; margin-bottom: 20px;">
                     <button class="btn-tab active" data-tab="attendance-tab" style="padding: 10px 20px; border-radius: 8px; border: none; background: var(--tab-active-bg); color: var(--text-main); cursor: pointer; transition: all 0.3s; font-weight: 600;">Attendance</button>
-                    <button class="btn-tab" data-tab="todays-tab" style="padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: var(--tab-inactive-color); cursor: pointer; transition: all 0.3s; font-weight: 600;">Today's Classes</button>
                     <button class="btn-tab" data-tab="routine-tab" style="padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: var(--tab-inactive-color); cursor: pointer; transition: all 0.3s; font-weight: 600;">Class Routine</button>
                 </div>
 
@@ -119,18 +143,6 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <span>Currently using mock data. You must update app.py with your college's specific HTML structure to fetch real data.</span>
                 </div>
                 </div> <!-- End attendance tab -->
-
-                <div id="todays-tab" class="tab-content" style="display: none;">
-                    <header class="dashboard-header">
-                        <div>
-                            <h1>Today's Classes</h1>
-                            <p>Attendance status for today's subjects.</p>
-                        </div>
-                    </header>
-                    <div class="stats-grid" id="todays-container" style="margin-top: 1rem;">
-                        <!-- Today's classes injected via JS -->
-                    </div>
-                </div>
 
                 <div id="routine-tab" class="tab-content" style="display: none;">
                     <header class="dashboard-header">
@@ -1136,6 +1148,13 @@ body {
 }
 """
 JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
+    // HTML escaping utility to prevent XSS
+    const escapeHtml = (str) => {
+        const div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    };
+
     // DOM Elements
     const loginView = document.getElementById('login-view');
     const dashboardView = document.getElementById('dashboard-view');
@@ -1420,13 +1439,13 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
                         // Check if value looks like an image URL
                         if (value.startsWith('http') && (value.includes('.jpeg') || value.includes('.jpg') || value.includes('.png') || value.includes('.gif'))) {
                             item.innerHTML = `
-                                <span class="info-label">${key}</span>
-                                <span class="info-value"><img src="${value}" alt="${key}" style="max-width: 150px; border-radius: 8px; margin-top: 5px;"></span>
+                                <span class="info-label">${escapeHtml(key)}</span>
+                                <span class="info-value"><img src="${encodeURI(value)}" alt="${escapeHtml(key)}" style="max-width: 150px; border-radius: 8px; margin-top: 5px;"></span>
                             `;
                         } else {
                             item.innerHTML = `
-                                <span class="info-label">${key}</span>
-                                <span class="info-value">${value}</span>
+                                <span class="info-label">${escapeHtml(key)}</span>
+                                <span class="info-value">${escapeHtml(value)}</span>
                             `;
                         }
                         container.appendChild(item);
@@ -1773,11 +1792,15 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
     
     async function saveCRStudents() {
         try {
-            await fetch('/api/cr_students', {
+            const resp = await fetch('/api/cr_students', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ students: crStudentsData })
             });
+            const res = await resp.json();
+            if (!res.success) {
+                console.warn("Server responded with failure on saving CR students:", res);
+            }
         } catch (e) {
             console.error("Failed to save CR students to server", e);
         }
@@ -2062,7 +2085,6 @@ JS_CONTENT = """document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
-
 """
 
 MOCK_DATA = {
@@ -2341,23 +2363,12 @@ def login():
                                 subject = subject_span.get_text(strip=True)
                                 teacher_span = td.find('span', class_='class-teacher')
                                 room_span = td.find('span', class_='bulding-room')
-                                
-                                # Extract attendance status
-                                att_status = None
-                                present_span = td.find('span', class_='attendance_status_present')
-                                absent_span = td.find('span', class_='attendance_status_absent')
-                                if present_span:
-                                    att_status = 'Present'
-                                elif absent_span:
-                                    att_status = 'Absent'
-                                    
                                 day_schedule.append({
                                     "period": period_idx,
                                     "colspan": colspan,
                                     "subject": subject,
                                     "teacher": teacher_span.get_text(strip=True) if teacher_span else "",
-                                    "room": room_span.get_text(strip=True) if room_span else "",
-                                    "attendance": att_status
+                                    "room": room_span.get_text(strip=True) if room_span else ""
                                 })
                             else:
                                 day_schedule.append({
@@ -2374,9 +2385,10 @@ def login():
         except Exception as e:
             print(f"Failed to fetch routine: {e}")
 
-        # Track login in database
+        # Track login in database & auto-sync name to CR list
         try:
             mongo_uri = os.environ.get("MONGO_URI")
+            db = None
             if mongo_uri:
                 client = MongoClient(mongo_uri)
                 db = client.get_database("attendance_tracker")
@@ -2386,8 +2398,69 @@ def login():
                     "studentName": student_name,
                     "timestamp": datetime.utcnow()
                 })
+                
+            # Helper to search roll number from personal_info
+            def find_roll(d):
+                if isinstance(d, dict):
+                    for k, v in d.items():
+                        if any(x in k.lower() for x in ["roll", "reg", "enroll", "student id"]):
+                            if isinstance(v, str) and v.strip() and v.strip() != "-":
+                                return v.strip()
+                        res = find_roll(v)
+                        if res:
+                            return res
+                elif isinstance(d, list):
+                    for item in d:
+                        res = find_roll(item)
+                        if res:
+                            return res
+                return None
+                
+            extracted_roll = find_roll(personal_info) or username or ""
+            
+            # If we have a valid student name and roll, auto-sync to shared CR list
+            if student_name and student_name.strip() and student_name.lower() not in ["student", "john doe", "-"]:
+                # 1. Update in MongoDB if available
+                if db:
+                    doc = db.cr_students.find_one({"_id": "shared_list"})
+                    if doc and "students" in doc:
+                        st_list = doc["students"]
+                        updated = False
+                        for s in st_list:
+                            s_roll = s.get("rollNo", "")
+                            # Match roll exact, or substring, or trailing number
+                            if s_roll and (extracted_roll.lower() in s_roll.lower() or s_roll.lower() in extracted_roll.lower() or (extracted_roll.isdigit() and s_roll.endswith(extracted_roll))):
+                                if s.get("name") != student_name:
+                                    s["name"] = student_name
+                                    updated = True
+                                break
+                        if updated:
+                            db.cr_students.update_one(
+                                {"_id": "shared_list"},
+                                {"$set": {"students": st_list, "updatedAt": datetime.utcnow()}}
+                            )
+                            
+                # 2. Update local cr_students.json if exists and writable
+                if os.path.exists('cr_students.json'):
+                    try:
+                        import json
+                        with open('cr_students.json', 'r', encoding='utf-8') as f:
+                            local_list = json.load(f)
+                        updated_loc = False
+                        for s in local_list:
+                            s_roll = s.get("rollNo", "")
+                            if s_roll and (extracted_roll.lower() in s_roll.lower() or s_roll.lower() in extracted_roll.lower() or (extracted_roll.isdigit() and s_roll.endswith(extracted_roll))):
+                                if s.get("name") != student_name:
+                                    s["name"] = student_name
+                                    updated_loc = True
+                                break
+                        if updated_loc:
+                            with open('cr_students.json', 'w', encoding='utf-8') as f:
+                                json.dump(local_list, f, indent=2)
+                    except Exception:
+                        pass
         except Exception as db_err:
-            print(f"Database error: {db_err}")
+            print(f"Database / Sync error: {db_err}")
 
         # Check for CR authorization
         # (moved to top of function)
@@ -2420,22 +2493,26 @@ def get_cr_students():
             client = MongoClient(mongo_uri)
             db = client.get_database("attendance_tracker")
             doc = db.cr_students.find_one({"_id": "shared_list"})
-            if doc:
+            if doc and "students" in doc and len(doc["students"]) > 0:
                 return jsonify({"success": True, "data": doc.get("students", [])})
     except Exception as e:
         print("Mongo error:", e)
         
     import json
-    if os.path.exists('cr_students.json'):
-        with open('cr_students.json', 'r') as f:
-            return jsonify({"success": True, "data": json.load(f)})
+    try:
+        if os.path.exists('cr_students.json'):
+            with open('cr_students.json', 'r', encoding='utf-8') as f:
+                return jsonify({"success": True, "data": json.load(f)})
+    except Exception as e:
+        print("File read error:", e)
             
     return jsonify({"success": True, "data": []})
 
 @app.route('/api/cr_students', methods=['POST'])
 def save_cr_students():
-    data = request.json
+    data = request.json or {}
     students = data.get('students', [])
+    saved_mongo = False
     
     try:
         mongo_uri = os.environ.get("MONGO_URI")
@@ -2444,14 +2521,18 @@ def save_cr_students():
             db = client.get_database("attendance_tracker")
             db.cr_students.update_one(
                 {"_id": "shared_list"},
-                {"$set": {"students": students}},
+                {"$set": {"students": students, "updatedAt": datetime.utcnow()}},
                 upsert=True
             )
+            saved_mongo = True
     except Exception as e:
         print("Mongo error:", e)
 
-    import json
-    with open('cr_students.json', 'w') as f:
-        json.dump(students, f)
+    try:
+        import json
+        with open('cr_students.json', 'w', encoding='utf-8') as f:
+            json.dump(students, f, indent=2)
+    except Exception as e:
+        print("Local file write error (normal on serverless):", e)
         
-    return jsonify({"success": True})
+    return jsonify({"success": True, "saved_mongo": saved_mongo})

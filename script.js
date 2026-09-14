@@ -1,4 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // HTML escaping utility to prevent XSS
+    const escapeHtml = (str) => {
+        const div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    };
+
     // DOM Elements
     const loginView = document.getElementById('login-view');
     const dashboardView = document.getElementById('dashboard-view');
@@ -283,13 +290,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Check if value looks like an image URL
                         if (value.startsWith('http') && (value.includes('.jpeg') || value.includes('.jpg') || value.includes('.png') || value.includes('.gif'))) {
                             item.innerHTML = `
-                                <span class="info-label">${key}</span>
-                                <span class="info-value"><img src="${value}" alt="${key}" style="max-width: 150px; border-radius: 8px; margin-top: 5px;"></span>
+                                <span class="info-label">${escapeHtml(key)}</span>
+                                <span class="info-value"><img src="${encodeURI(value)}" alt="${escapeHtml(key)}" style="max-width: 150px; border-radius: 8px; margin-top: 5px;"></span>
                             `;
                         } else {
                             item.innerHTML = `
-                                <span class="info-label">${key}</span>
-                                <span class="info-value">${value}</span>
+                                <span class="info-label">${escapeHtml(key)}</span>
+                                <span class="info-value">${escapeHtml(value)}</span>
                             `;
                         }
                         container.appendChild(item);
@@ -636,11 +643,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function saveCRStudents() {
         try {
-            await fetch('/api/cr_students', {
+            const resp = await fetch('/api/cr_students', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ students: crStudentsData })
             });
+            const res = await resp.json();
+            if (!res.success) {
+                console.warn("Server responded with failure on saving CR students:", res);
+            }
         } catch (e) {
             console.error("Failed to save CR students to server", e);
         }

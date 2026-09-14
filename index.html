@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adamas Attendence Tracker</title>
+    <meta name="description" content="Official Adamas University student attendance tracker. View your attendance records, class routine, and academic progress securely.">
+    <meta name="robots" content="index, follow">
+    <title>Adamas Attendance Tracker - Official Student Portal</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="cursor-dot"></div>
@@ -38,6 +40,12 @@
                     </button>
                     <div id="login-error" class="error-msg"></div>
                 </form>
+                <div class="login-disclaimer" style="margin-top: 1.5rem; padding: 0.75rem 1rem; background: rgba(0, 86, 164, 0.08); border-radius: 10px; border: 1px solid rgba(0, 86, 164, 0.15);">
+                    <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; text-align: center;">
+                        <i data-lucide="shield-check" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i>
+                        This is an <strong>official student tool</strong> for Adamas University. Your credentials are securely used to fetch attendance data from the university portal and are <strong>never stored</strong>.
+                    </p>
+                </div>
             </div>
             
             <div class="animated-bg">
