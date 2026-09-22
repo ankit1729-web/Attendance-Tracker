@@ -2154,6 +2154,7 @@ def login():
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
             future_attendance = executor.submit(fetch_url, "https://adamasknowledgecity.ac.in/student/attendance")
             future_routine = executor.submit(fetch_url, "https://adamasknowledgecity.ac.in/student/routine")
+            future_profile = executor.submit(fetch_url, "https://adamasknowledgecity.ac.in/student/account/personal-info")
             
             soup_dashboard = BeautifulSoup(login_response.text, 'html.parser')
             student_name = username.split('/')[-1] if '/' in username else username
@@ -2161,47 +2162,34 @@ def login():
             
             if name_span and name_span.text.strip():
                 student_name = name_span.text.strip()
-            else:
-                # Aggressive fallback to profile page
-                try:
-                    future_profile = executor.submit(fetch_url, "https://adamasknowledgecity.ac.in/student/account/personal-info")
-                    profile_resp = future_profile.result()
-                    profile_soup = BeautifulSoup(profile_resp.text, 'html.parser')
-                    
-                    # 1. Try username span
+                
+            try:
+                profile_resp = future_profile.result()
+                profile_soup = BeautifulSoup(profile_resp.text, 'html.parser')
+                
+                # If name wasn't found on dashboard, try profile
+                if not (name_span and name_span.text.strip()):
                     profile_name_span = profile_soup.find('span', class_='username')
                     if profile_name_span and profile_name_span.text.strip():
                         student_name = profile_name_span.text.strip()
                     else:
-                        # 2. Try input fields (like first_name, name, student_name)
                         found = False
                         for inp in profile_soup.find_all('input'):
                             if inp.get('name') and 'name' in inp.get('name').lower() and inp.get('value'):
                                 val = inp.get('value').strip()
-                                # avoid picking up weird hidden inputs
-                                if len(val) > 2 and len(val) < 50:
+                                if 2 < len(val) < 50:
                                     student_name = val
                                     found = True
                                     break
-                                    
                         if not found:
-                            # 3. Text Heuristic: Find label "Name" or "Student Name" and get the next text or td
-                            all_text_elements = profile_soup.find_all(['th', 'td', 'label', 'div', 'span'])
-                            for i, el in enumerate(all_text_elements):
-                                text = el.get_text(strip=True).lower()
-                                if text in ['name', 'name:', 'student name', 'student name:']:
-                                    # Try to find the next element that has text
-                                    for next_el in all_text_elements[i+1:]:
-                                        next_text = next_el.get_text(strip=True)
-                                        if next_text and next_text.lower() not in ['name', 'name:', 'student name']:
-                                            if len(next_text) > 2 and len(next_text) < 50:
-                                                student_name = next_text
-                                                found = True
-                                                break
-                                    if found:
-                                        break
-                except Exception as e:
-                    print(f"Failed to fetch profile: {e}")
+                            import re
+                            name_label = profile_soup.find(lambda tag: tag.name in ['th', 'td', 'label'] and re.search(r'^\s*(student\s*)?name\s*:?\s*$', tag.get_text(strip=True), re.I))
+                            if name_label:
+                                next_td = name_label.find_next_sibling('td')
+                                if next_td and next_td.get_text(strip=True):
+                                    student_name = next_td.get_text(strip=True)
+            except Exception as e:
+                print(f"Failed to fetch profile: {e}")
 
             attendance_response = future_attendance.result()
             r_routine = future_routine.result()
